@@ -1,5 +1,9 @@
 #include "cleanup.h"
 
+void cleanChar(char* &s) {
+    delete s;
+}
+
 void cleanBoard(Gameplay &gameplay) {
     int n = gameplay.size;
     int** &board = gameplay.board;
@@ -45,9 +49,17 @@ void cleanList(List &list) {
 
     while (head != nullptr) {
         ListNode* tmp = head;
+        cleanChar((tmp->data).username);
+        cleanChar((tmp->data).date);
+        cleanChar((tmp->data).interval);
         head = head->next;
         delete tmp;
     }
 
     list.size = 0;
+}
+
+void cleanUser(User &user) {
+    cleanChar(user.username);
+    cleanChar(user.password);
 }

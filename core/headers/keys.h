@@ -1,10 +1,19 @@
 #pragma once
 
+// Char size
+#define USERNAME_SIZE 17
+#define PASSWORD_SIZE 33
+#define DATE_SIZE 16
+#define INTERVAL_SIZE 6
+
 // ANSI code for text color
-#define BLACK_TEXT "\x1b[38;5;233m"
+// #define BLACK_TEXT "\x1b[38;5;233m"
 #define YELLOW_TEXT "\x1b[38;5;11m"
 #define GREEN_TEXT "\x1b[38;5;10m"
 #define RED_TEXT "\x1b[38;5;9m"
+#define WHITE_TEXT "\x1b[38;5;255m"
+#define BLACK_TEXT "\x1b[38;5;0m"
+#define DISABLE_TEXT "\x1b[38;5;231m"
 
 // ANSCI code for background color
 #define RESET_BACKGROUND_COLOR "\x1b[49m"
@@ -24,6 +33,7 @@
 #define TEN_TWENTY_FOUR_COLOR "\x1b[48;5;202m"
 #define TWENTY_FORTY_EIGHT_COLOR "\x1b[48;5;9m"
 #define FORTY_NINETY_SIX_COLOR "\x1b[48;5;196m"
+#define WHITE_BACKGROUND_COLOR "\x1b[48;5;255m"
 
 // ANSI code for text format
 #define RESET_FORMAT "\033[0m"
@@ -35,6 +45,7 @@
 #define KEYDOWN 80
 #define KEYLEFT 75
 #define KEYRIGHT 77
+#define ENTER 13
 #define N_KEY 110
 #define R 114
 #define S 115

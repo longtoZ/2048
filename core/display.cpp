@@ -1,7 +1,17 @@
 #include <display.h>
 
 int convertCellWidth(int n) {
-    return 7 + n - 4;
+    if (n < 5)
+        return 7 + n - 4;
+    else
+        return 9;
+}
+
+int convertCellHeight(int n) {
+    if (n < 5)
+        return n;
+    else;
+        return 5;
 }
 
 string convertNumberToColor(int n) {
@@ -37,7 +47,7 @@ string convertNumberToColor(int n) {
     return color;
 }
 
-void centerBoardNumber(int n, int length, string bg, int type = 0) {
+void centerBoardNumber(int n, int length, string txt, string bg, int type = 0) {
     string color = type == 0 ? convertNumberToColor(n) : CELL_BACKGROUND_COLOR;
     int nCopy = n;
     int count =  n == 0 ? 1 : 0;
@@ -48,7 +58,7 @@ void centerBoardNumber(int n, int length, string bg, int type = 0) {
 
     int leftSpaces = (length-count)/2;
     int rightSpaces = length-leftSpaces-count;
-    string s = string(leftSpaces, ' ') + BLACK_TEXT + to_string(n) + string(rightSpaces, ' ');
+    string s = string(leftSpaces, ' ') + txt + to_string(n) + string(rightSpaces, ' ');
 
     const char* str = convertStringToChar(s);
     const char* color_str = convertStringToChar(color);
@@ -83,12 +93,13 @@ void printBoard(Gameplay &gameplay) {
     int** &board = gameplay.board;
     int n = gameplay.size;
     int cell_width = convertCellWidth(n);
+    int cell_height = convertCellHeight(n);
 
     for (int i=0; i<n; i++) {
         printf("\t");
         emptyLine(n, cell_width, BOARD_BACKGROUND_COLOR);
 
-        for (int k=0; k<n/2; k++) {
+        for (int k=0; k<cell_height/2; k++) {
             printf("\t");
             for (int j=0; j<n; j++) {
                 emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
@@ -102,12 +113,12 @@ void printBoard(Gameplay &gameplay) {
             if (board[i][j] == 0) {
                 emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
             } else {
-                centerBoardNumber(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
+                centerBoardNumber(board[i][j], cell_width, BLACK_TEXT, BOARD_BACKGROUND_COLOR);
             }
         }
         printf("%s\n", RESET_FORMAT);
 
-        for (int k=0; k<(n - n/2 - 1); k++) {
+        for (int k=0; k<(cell_height - cell_height/2 - 1); k++) {
             printf("\t");
             for (int j=0; j<n; j++) {
                 emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
@@ -145,16 +156,16 @@ void printGameplayMenu(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, U
     printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, BLACK_TEXT, CELL_BACKGROUND_COLOR, "    Score   ", MENU_BACKGROUND_COLOR);
     printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, BLACK_TEXT, CELL_BACKGROUND_COLOR, "    Best    ", MENU_BACKGROUND_COLOR);
     printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, BLACK_TEXT, CELL_BACKGROUND_COLOR, "    Steps   ", MENU_BACKGROUND_COLOR);
-    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, BLACK_TEXT, CELL_BACKGROUND_COLOR, " Undo steps ", MENU_BACKGROUND_COLOR);
-    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, BLACK_TEXT, CELL_BACKGROUND_COLOR, " Redo steps ", MENU_BACKGROUND_COLOR);
+    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), CELL_BACKGROUND_COLOR, " Undo steps ", MENU_BACKGROUND_COLOR);
+    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), CELL_BACKGROUND_COLOR, " Redo steps ", MENU_BACKGROUND_COLOR);
     printf("%s\n", RESET_FORMAT);
 
     printf("\t");
-    centerBoardNumber(score, cell_length, MENU_BACKGROUND_COLOR, 1);
-    centerBoardNumber(best, cell_length, MENU_BACKGROUND_COLOR, 1);
-    centerBoardNumber(step, cell_length, MENU_BACKGROUND_COLOR, 1);
-    centerBoardNumber(undoStep, cell_length, MENU_BACKGROUND_COLOR, 1);
-    centerBoardNumber(redoStep, cell_length, MENU_BACKGROUND_COLOR, 1);
+    centerBoardNumber(score, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
+    centerBoardNumber(best, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
+    centerBoardNumber(step, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
+    centerBoardNumber(undoStep, cell_length, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), MENU_BACKGROUND_COLOR, 1);
+    centerBoardNumber(redoStep, cell_length, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), MENU_BACKGROUND_COLOR, 1);
     printf("%s\n", RESET_FORMAT);
 
     printf("\t");
@@ -169,8 +180,10 @@ void printGameplayMenu(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, U
     printf("\t%s%s - Move down - [ArrowDown]                                            %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
     printf("\t%s%s - Move left - [ArrowLeft]                                            %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
     printf("\t%s%s - Move right - [ArrowRight]                                          %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
-    printf("\t%s%s - Undo - [u]                                                         %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
-    printf("\t%s%s - Redo - [r]                                                         %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
+    if (gameplay.canUndoRedo) {
+        printf("\t%s%s - Undo - [u]                                                         %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
+        printf("\t%s%s - Redo - [r]                                                         %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
+    }
     printf("\t%s%s - Save game - [s]                                                    %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
     printf("\t%s%s - End game - [x]                                                     %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
 
@@ -185,66 +198,71 @@ void printFull(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, User &use
     printBoard(gameplay);
 }
 
-void printStartMenu(User &user) {
-    cout << endl << endl;
-    cout << 
-            "\t __          __  _                          _  \n" 
-            "\t \\ \\        / / | |                        | | \n"
-            "\t  \\ \\  /\\  / /__| | ___ ___  _ __ ___   ___| | \n"
-            "\t   \\ \\/  \\/ / _ \\ |/ __/ _ \\| '_ ` _ \\ / _ \\ | \n"
-            "\t    \\  /\\  /  __/ | (_| (_) | | | | | |  __/_| \n"
-            "\t     \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___(_) \n"
-            "\n";
+int printStartMenu(User &user) {
+    string pre = 
+                "\n\n"
+                "\t __          __  _                          _  \n" 
+                "\t \\ \\        / / | |                        | | \n"
+                "\t  \\ \\  /\\  / /__| | ___ ___  _ __ ___   ___| | \n"
+                "\t   \\ \\/  \\/ / _ \\ |/ __/ _ \\| '_ ` _ \\ / _ \\ | \n"
+                "\t    \\  /\\  /  __/ | (_| (_) | | | | | |  __/_| \n"
+                "\t     \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___(_) \n"
+                "\n"
+                "Welcome back, " BOLD_TEXT YELLOW_TEXT + string(user.username) + RESET_FORMAT "!\n"
+                "Choose one option:\n\n";
+    string post = "";
+    string options[] = {
+        "Start new game",
+        "Continue previous game",
+        "View your achievement",
+        "View global leaderboard",
+        "Delete account",
+        "Logout" ,
+    };
 
-    cout << "Welcome back, " << BOLD_TEXT << YELLOW_TEXT << user.username << RESET_FORMAT << "!" << endl;
+    int chosen = generateSelections(options, 6, pre, post);
 
-    cout << "\t\nChoose one option:\n"
-            "\t\n\t Start new game - [1]\n"
-            "\t\n\t Continue previous game - [2]\n"
-            "\t\n\t View your achievement - [3]\n"
-            "\t\n\t View global leaderboard - [4]\n"
-            "\t\n\t Delete account - [5]\n"
-            "\t\n\t Logout - [6]" << endl;
-    
-    // for (int i=1; i<=255; i++) {
-    //     cout << "\x1b[38;5;" << i << "m " << i << "\x1b[0m ";
-    // }
-
-    // cout << endl;
-
-    // for (int i=1; i<=255; i++) {
-    //     cout << "\x1b[48;5;" << i << "m " << i << "\x1b[0m ";
-    // }
+    return chosen;
 }
 
-void printUserMenu() {
-    cout << endl << endl;
-    cout <<
-        "\t                                                                   ,---.-,         \n"
-        "\t                                                     ,--,          '   ,'  '.      \n"
-        "\t       ,----,              ,----..                 ,--.'|         /   /      \\    \n"
-        "\t     .'   .' \\            /   /   \\             ,--,  | :        .   ;  ,/.  :   \n"
-        "\t   ,----,'    |          /   .     :         ,---.'|  : '        '   |  | :  ;     \n"
-        "\t   |    :  .  ;         .   /   ;.  \\        ;   : |  | ;        '   |  ./   :    \n"
-        "\t   ;    |.'  /         .   ;   /  ` ;        |   | : _' |        |   :       ,     \n"
-        "\t   `----'/  ;          ;   |  ; \\ ; |        :   : |.'  |         \\   \\     /   \n"
-        "\t     /  ;  /           |   :  | ; | '        |   ' '  ; :          ;   ,   '\\     \n"
-        "\t    ;  /  /-,          .   |  ' ' ' :        \\   \\  .'. |         /   /      \\  \n"
-        "\t   /  /  /.`|          '   ;  \\; /  |         `---`:  | '        .   ;  ,/.  :    \n"
-        "\t ./__;      :           \\   \\  ',  /               '  ; |        '   |  | :  ;   \n"
-        "\t |   :    .'             ;   :    /                |  : ;        '   |  ./   :     \n"
-        "\t ;   | .'                 \\   \\ .'                 '  ,/         |   :      /    \n"
-        "\t `---'                     `---`                   '--'           \\   \\   .'     \n"
-        "\t                                                                   `---`-'         \n";
-    cout << endl;
-    cout << YELLOW_TEXT << BOLD_TEXT << "\t                                                     - Programmed by LongTo -" << RESET_FORMAT << endl;
-    cout << endl << endl;
-    cout << "Welcome, player! Use full-screen to enjoy the game\n"
-            "\t Login - [1]\n"
-            "\t Register - [2]\n"
-            "\t Exit - [3]\n";
-    cout << endl << endl;
-    cout << "Source code: " << BOLD_TEXT << UNDERLINE_TEXT << "https://github.com/longtoZ/2048" << RESET_FORMAT << endl; 
+int printUserMenu() {
+    string pre =
+                "\n\n" 
+                "\t                                                                   ,---.-,         \n"
+                "\t                                                     ,--,          '   ,'  '.      \n"
+                "\t       ,----,              ,----..                 ,--.'|         /   /      \\    \n"
+                "\t     .'   .' \\            /   /   \\             ,--,  | :        .   ;  ,/.  :   \n"
+                "\t   ,----,'    |          /   .     :         ,---.'|  : '        '   |  | :  ;     \n"
+                "\t   |    :  .  ;         .   /   ;.  \\        ;   : |  | ;        '   |  ./   :    \n"
+                "\t   ;    |.'  /         .   ;   /  ` ;        |   | : _' |        |   :       ,     \n"
+                "\t   `----'/  ;          ;   |  ; \\ ; |        :   : |.'  |         \\   \\     /   \n"
+                "\t     /  ;  /           |   :  | ; | '        |   ' '  ; :          ;   ,   '\\     \n"
+                "\t    ;  /  /-,          .   |  ' ' ' :        \\   \\  .'. |         /   /      \\  \n"
+                "\t   /  /  /.`|          '   ;  \\; /  |         `---`:  | '        .   ;  ,/.  :    \n"
+                "\t ./__;      :           \\   \\  ',  /               '  ; |        '   |  | :  ;   \n"
+                "\t |   :    .'             ;   :    /                |  : ;        '   |  ./   :     \n"
+                "\t ;   | .'                 \\   \\ .'                 '  ,/         |   :      /    \n"
+                "\t `---'                     `---`                   '--'           \\   \\   .'     \n"
+                "\t                                                                   `---`-'         \n"
+                YELLOW_TEXT BOLD_TEXT "\t                                                     - Programmed by LongTo -" RESET_FORMAT 
+                "\n\n"
+                "Welcome, player! Use full-screen to enjoy the game\n";
+
+    string post = 
+                "\n"
+                "Source code: " BOLD_TEXT UNDERLINE_TEXT "https://github.com/longtoZ/2048" RESET_FORMAT;
+
+    string options[] = {
+        "Login",
+        "Register",
+        "View global leaderboard",
+        "Exit",
+    };
+
+    int chosen = generateSelections(options, 4, pre, post);
+
+    return chosen;
+
 }
 
 void printAchievement(User &user) {

@@ -2,7 +2,7 @@
 using namespace std;
 
 #define FILE_PATH "./database/user/"
-#define USER_FILE_PATH "./database/user.txt"
+#define USER_FILE_PATH "./database/user.bin"
 
 string leftCellString(string str, int length) {
     int rightSpaces = length - str.length() - 1;
@@ -25,27 +25,131 @@ string leftCellNumber(int n, int length) {
     return s;
 }
 
+void storeBestScore(User &user) {
+
+    Data bestScore;
+    bool gotBestScore = false;
+
+    string fullPath = FILE_PATH + string(user.username) + "/leaderboard.bin";
+
+    ifstream inputFile(fullPath, ios::binary);
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Error: Could not open file '" << fullPath << "' for reading." << std::endl;
+        return;
+    }
+    
+    while (!inputFile.eof()) {
+
+        char* date = new char[DATE_SIZE];
+        int size;
+        int score;
+        int step;
+        char* interval = new char[INTERVAL_SIZE];
+
+        inputFile.read(date, DATE_SIZE);
+        inputFile.read((char*)(&size), sizeof(size));
+        inputFile.read((char*)(&score), sizeof(score));
+        inputFile.read((char*)(&step), sizeof(step));
+        inputFile.read(interval, INTERVAL_SIZE);
+
+        if (score > bestScore.score) {
+            bestScore.date = date;
+            bestScore.size = size;
+            bestScore.score = score;
+            bestScore.step = step;
+            bestScore.interval = interval;
+            gotBestScore = true;
+        }
+    }
+
+    inputFile.close();
+
+    if (gotBestScore) {
+        string bestFullPath= FILE_PATH + string(user.username) + "/best.bin";
+
+        ofstream outputFile(bestFullPath, ios::binary);
+
+        if (!outputFile.is_open()) {
+            std::cerr << "Error: Could not open file '" << bestFullPath << "' for writing." << std::endl;
+            return;
+        }
+
+        outputFile.write(bestScore.date, DATE_SIZE);
+        outputFile.write((char*)(&bestScore.size), sizeof(bestScore.size));
+        outputFile.write((char*)(&bestScore.score), sizeof(bestScore.score));
+        outputFile.write((char*)(&bestScore.step), sizeof(bestScore.step));
+        outputFile.write(bestScore.interval, INTERVAL_SIZE);
+
+        outputFile.close();
+    }
+
+}   
+
+Data getBestScore(User &user) {
+    Data bestScore;
+    string fullPath = FILE_PATH + string(user.username) + "/best.bin";
+
+    ifstream inputFile(fullPath, ios::binary);
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Error: Could not open file '" << fullPath << "' for reading." << std::endl;
+        return bestScore;
+    }
+
+    bestScore.date = new char[DATE_SIZE];
+    bestScore.interval = new char[INTERVAL_SIZE];
+
+    inputFile.read(bestScore.date, DATE_SIZE);
+    inputFile.read((char*)(&bestScore.size), sizeof(bestScore.size));
+    inputFile.read((char*)(&bestScore.score), sizeof(bestScore.score));
+    inputFile.read((char*)(&bestScore.step), sizeof(bestScore.step));
+    inputFile.read(bestScore.interval, INTERVAL_SIZE);
+
+    inputFile.close();
+
+    return bestScore;
+
+}
+
 void storeAchievement(int size, int score, int step, string elapsed_time, User &user) {
-    string fullPath = FILE_PATH + user.username + "/leaderboard.txt";
+    string fullPath = FILE_PATH + string(user.username) + "/leaderboard.bin";
 
-    ofstream ofile;
-    ofile.open(fullPath, ios::app);
+    ofstream outFile(fullPath, ios::app | ios::binary);
 
-    if (!ofile) {
+    if (!outFile.is_open()) {
+        std::cerr << "Error: Could not open file '" << fullPath << "' for appending." << std::endl;
         return;
     }
 
-    string data = getCurrentDateTime() + " " + to_string(size) + " " + to_string(score) + " " + to_string(step) + " " + elapsed_time + "\n";
-    ofile << data;
+    // Seek to the end of the file
+    outFile.seekp(ios::end);
 
-    ofile.close();
+    // Write the new data
+    char* date = convertStringToChar(getCurrentDateTime());
+    char* interval = convertStringToChar(elapsed_time);
+
+    outFile.write(date, DATE_SIZE);
+    outFile.write((char*)(&size), sizeof(size));
+    outFile.write((char*)(&score), sizeof(score));
+    outFile.write((char*)(&step), sizeof(step));
+    outFile.write(interval, INTERVAL_SIZE);
+
+    // Check for errors after write
+    if (!outFile.good()) {
+        std::cerr << "Error: Error writing data to file." << std::endl;
+        outFile.close();
+        return;
+    }
+
+    outFile.close();
 
     storeBestScore(user);
 }
 
 void deleteAchievement(User &user) {
-    string fullLdbPath = FILE_PATH + user.username + "/leaderboard.txt";
-    string fullBestPath = FILE_PATH + user.username + "/best.txt";
+    string fullLdbPath = FILE_PATH + string(user.username) + "/leaderboard.bin";
+    string fullBestPath = FILE_PATH + string(user.username) + "/best.bin";
 
     // Clear all achievement
     ofstream ldbFile;
@@ -73,16 +177,14 @@ void deleteAchievement(User &user) {
 
 void getAchievement(User &user) {
     List list;
-
     list.init();
 
-    string fullPath = FILE_PATH + user.username + "/leaderboard.txt";
+    string fullPath = FILE_PATH + string(user.username) + "/leaderboard.bin";
 
-    string line;
-    ifstream ifile;
-    ifile.open(fullPath);
+    ifstream inputFile(fullPath, ios::binary);
 
-    if (!ifile) {
+    if (!inputFile.is_open()) {
+        std::cerr << "Error: Could not open file '" << fullPath << "' for reading." << std::endl;
         return;
     }
 
@@ -92,64 +194,44 @@ void getAchievement(User &user) {
     printf("\t| Rank |         Date         |   Size    |   Score   |   Steps   |   Interval   |\n");
     printf("\t+------+----------------------+-----------+-----------+-----------+--------------+\n");
 
-    while (getline(ifile, line)) {
-
+    while (true) {
         Data data;
 
-        // Parse date
-        string day = line.substr(0,2);
-        string month = line.substr(2,2);
-        string year = line.substr(4,4);
+        data.date = new char[DATE_SIZE];
+        data.size;
+        data.score;
+        data.step;
+        data.interval = new char[INTERVAL_SIZE];
 
-        string hour = line.substr(9,2);
-        string minute = line.substr(11,2);
-        string second = line.substr(13,2);
+        inputFile.read(data.date, DATE_SIZE);
+        inputFile.read((char*)(&data.size), sizeof(data.size));
+        inputFile.read((char*)(&data.score), sizeof(data.score));
+        inputFile.read((char*)(&data.step), sizeof(data.step));
+        inputFile.read(data.interval, INTERVAL_SIZE);
 
-        string date = day + "-" + month + "-" + year + " " + hour + ":" + minute + ":" + second;
-
-        int first_space = line.find(' ', 0);
-        int second_space = line.find(' ', first_space+1);
-        int third_space = line.find(' ', second_space+1);
-        int fourth_space = line.find(' ', third_space+1);
-
-        // Parse size
-        int size = stoi(line.substr(first_space+1, second_space-first_space-1));
-
-        // Parse score
-        int score = stoi(line.substr(second_space+1, third_space-second_space-1));
-
-        // Parse step
-        int step = stoi(line.substr(third_space+1, second_space-third_space-1));
-
-        // Parse interval
-        string interval = line.substr(fourth_space+1, line.length()-fourth_space-1);
-
-        data.date = date;
-        data.size = size;
-        data.score = score;
-        data.step = step;
-        data.interval = interval;
+        if (inputFile.eof()) {
+            break;
+        }
 
         list.insertTail(data);
-
     }
 
-    ifile.close();
+    inputFile.close();
     list.sort();
 
-    ListNode* &curr = list.head;
+    ListNode* curr = list.head;
 
     for (int i=0; i<list.size; i++) {
         const char* rank = convertStringToChar(leftCellNumber(i+1, 6));
-        const char* date = convertStringToChar((curr->data).date);
+        const char* date = formatDateChar((curr->data).date);
         const char* size = convertStringToChar(leftCellString(to_string((curr->data).size) + "x" + to_string((curr->data).size), 11));
         const char* score = convertStringToChar(leftCellNumber((curr->data).score, 11));
         const char* step = convertStringToChar(leftCellNumber((curr->data).step, 11));
-        const char* interval = convertStringToChar((curr->data).interval);
-
-        curr = curr->next;
+        const char* interval = (curr->data).interval;
 
         printf("\t|%s| %s  |%s|%s|%s| %s        |\n", rank, date, size, score, step, interval);
+
+        curr = curr->next;
 
     }
     printf("\t+------+----------------------+-----------+-----------+-----------+--------------+\n");
@@ -161,11 +243,13 @@ void getLeaderboard() {
     List list;
     list.init();
 
-    string line = "";
     ifstream userFile;
-    userFile.open(USER_FILE_PATH);
+    userFile.open(USER_FILE_PATH, ios::binary);
 
-    if (!userFile) return;
+    if (!userFile) {
+        std::cerr << "Error: Could not open file '" << USER_FILE_PATH << "' for reading." << std::endl;
+        return;
+    }
 
     printf("\t+---------------------------------------------------------------------------------------------------+\n");
     printf("\t|                                          TOP 10 LEADERBOARD                                       |\n");
@@ -173,83 +257,68 @@ void getLeaderboard() {
     printf("\t| Rank |       User       |         Date         |   Size    |   Score   |   Steps   |   Interval   |\n");
     printf("\t+------+------------------+----------------------+-----------+-----------+-----------+--------------+\n");
 
-    while (getline(userFile, line)) {
+    while (true) {
         // Get username
-        string username = line.substr(0, line.find(' ', 0));
+        char* username = new char[USERNAME_SIZE];
+        char* password = new char[PASSWORD_SIZE];
 
-        Data data;
+        userFile.read(username, USERNAME_SIZE);
+        userFile.read(password, PASSWORD_SIZE);
 
-        // Access best.txt of each user
-        string fullPath = FILE_PATH + username + "/best.txt";
-        string bestScoreLine = "";
-
-        ifstream bestScoreFile;
-        bestScoreFile.open(fullPath);
-
-        if (!bestScoreFile) return;
-
-        getline(bestScoreFile, bestScoreLine);
-        bestScoreFile.close();
-
-        if (bestScoreLine != "") {
-            // Parse date
-            string day = bestScoreLine.substr(0,2);
-            string month = bestScoreLine.substr(2,2);
-            string year = bestScoreLine.substr(4,4);
-
-            string hour = bestScoreLine.substr(9,2);
-            string minute = bestScoreLine.substr(11,2);
-            string second = bestScoreLine.substr(13,2);
-
-            string date = day + "-" + month + "-" + year + " " + hour + ":" + minute + ":" + second;
-
-            int first_space = bestScoreLine.find(' ', 0);
-            int second_space = bestScoreLine.find(' ', first_space+1);
-            int third_space = bestScoreLine.find(' ', second_space+1);
-            int fourth_space = bestScoreLine.find(' ', third_space+1);
-
-            // Parse size
-            int size = stoi(bestScoreLine.substr(first_space+1, second_space-first_space-1));
-
-            // Parse score
-            int score = stoi(bestScoreLine.substr(second_space+1, third_space-second_space-1));
-
-            // Parse step
-            int step = stoi(bestScoreLine.substr(third_space+1, second_space-third_space-1));
-
-            // Parse interval
-            string interval = bestScoreLine.substr(fourth_space+1, bestScoreLine.length()-fourth_space-1);
-
-            data.username = username;
-            data.date = date;
-            data.size = size;
-            data.score = score;
-            data.step = step;
-            data.interval = interval;
-
-            list.insertTail(data);
+        if (userFile.eof()) {
+            break;
         }
 
+        // Access best.txt of each user
+        string fullPath = FILE_PATH + string(username) + "/best.bin";
 
+        ifstream bestScoreFile;
+        bestScoreFile.open(fullPath, ios::binary);
+
+        if (!bestScoreFile) {
+            std::cerr << "Error: Could not open file '" << fullPath << "' for reading." << std::endl;
+            return;
+        }
+
+        Data bestScoreData;
+
+        bestScoreData.username = username;
+        bestScoreData.date = new char[DATE_SIZE];
+        bestScoreData.size;
+        bestScoreData.score;
+        bestScoreData.step;
+        bestScoreData.interval = new char[INTERVAL_SIZE];
+
+        bestScoreFile.read(bestScoreData.date, DATE_SIZE);
+        bestScoreFile.read((char*)(&bestScoreData.size), sizeof(bestScoreData.size));
+        bestScoreFile.read((char*)(&bestScoreData.score), sizeof(bestScoreData.score));
+        bestScoreFile.read((char*)(&bestScoreData.step), sizeof(bestScoreData.step));
+        bestScoreFile.read(bestScoreData.interval, INTERVAL_SIZE);
+
+        if (!bestScoreFile.eof()) {
+            list.insertTail(bestScoreData);
+        }
+
+        bestScoreFile.close();
     }
 
     userFile.close();
     list.sort();
 
     // Print the global leaderboard
-    ListNode* &curr = list.head;
-    int listSize = list.size > 10 ? 10 : list.size;
+    ListNode* curr = list.head;
+    int listSize = list.size > 20 ? 20 : list.size;
 
     for (int i=0; i<listSize; i++) {
         string displaySize = to_string((curr->data).size) + "x" + to_string((curr->data).size);
 
         const char* rank = convertStringToChar(leftCellNumber(i+1, 6));
-        const char* username = convertStringToChar(leftCellString((curr->data).username, 18));
-        const char* date = convertStringToChar((curr->data).date);
+        const char* username = convertStringToChar(leftCellString(string((curr->data).username), 18));
+        const char* date = formatDateChar((curr->data).date);
         const char* size = convertStringToChar(leftCellString(displaySize, 11));
         const char* score = convertStringToChar(leftCellNumber((curr->data).score, 11));
         const char* step = convertStringToChar(leftCellNumber((curr->data).step, 11));
-        const char* interval = convertStringToChar((curr->data).interval);
+        const char* interval = (curr->data).interval;
 
         curr = curr->next;
 

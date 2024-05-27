@@ -8,6 +8,7 @@ struct Gameplay {
     int emptyLeft;
     int score;
     int step;
+    bool canUndoRedo = true;
 };
 
 struct Position {
@@ -23,15 +24,15 @@ struct InitNumber {
 };
 
 struct Data {
-    std::string username;
-    std::string date;
+    char* username;
+    char* date;
     int size;
     int score = 0;
     int step;
-    std::string interval;
+    char* interval;
 };
 
 struct User {
-    std::string username;
-    std::string password;
+    char* username;
+    char* password;
 };

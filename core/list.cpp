@@ -1,21 +1,27 @@
 #include "list.h"
 
-ListNode::ListNode(Data data) {
+ListNode::ListNode(Data data)
+{
     this->data = data;
     this->next = nullptr;
 }
 
-void List::init() {
+void List::init()
+{
     head = nullptr;
     size = 0;
 }
 
-void List::insertHead(Data data) {
-    ListNode* node = new ListNode(data);
+void List::insertHead(Data data)
+{
+    ListNode *node = new ListNode(data);
 
-    if (head == nullptr) {
+    if (head == nullptr)
+    {
         head = node;
-    } else {
+    }
+    else
+    {
         node->next = head;
         head = node;
     }
@@ -23,15 +29,20 @@ void List::insertHead(Data data) {
     size++;
 }
 
-void List::insertTail(Data data) {
-    ListNode* node = new ListNode(data);
+void List::insertTail(Data data)
+{
+    ListNode *node = new ListNode(data);
 
-    if (head == nullptr) {
+    if (head == nullptr)
+    {
         head = node;
-    } else {
-        ListNode* curr = head;
+    }
+    else
+    {
+        ListNode *curr = head;
 
-        while (curr->next != nullptr) {
+        while (curr->next != nullptr)
+        {
             curr = curr->next;
         }
 
@@ -41,49 +52,71 @@ void List::insertTail(Data data) {
     size++;
 }
 
-void List::swap(ListNode* &p1, ListNode* &p2) {
-    std::string username = (p1->data).username;
-    std::string date = (p1->data).date;
-    int size = (p1->data).size;
-    int score = (p1->data).score;
-    int step = (p1->data).step;
-    std::string interval = (p1->data).interval;
+void List::swap(ListNode*& head, ListNode* node1, ListNode* node2) {
+    if ((node1->data).score == (node2->data).score) return;
 
-    (p1->data).username = (p2->data).username;
-    (p1->data).date = (p2->data).date;
-    (p1->data).size = (p2->data).size;
-    (p1->data).score = (p2->data).score;
-    (p1->data).step = (p2->data).step;
-    (p1->data).interval = (p2->data).interval;
+    // Find previous nodes of node1 and node2
+    ListNode *prev1 = nullptr, *prev2 = nullptr, *current = head;
+    while (current && (prev1 == nullptr || prev2 == nullptr)) {
+        if (current->next == node1) {
+            prev1 = current;
+        }
+        if (current->next == node2) {
+            prev2 = current;
+        }
+        current = current->next;
+    }
 
-    (p2->data).username = username;
-    (p2->data).date = date;
-    (p2->data).size = size;
-    (p2->data).score = score;
-    (p2->data).step = step;
-    (p2->data).interval = interval;
+    // If node1 or node2 are not present, do nothing
+    if (node1 == nullptr || node2 == nullptr) return;
+
+    // If node1 is head of linked list
+    if (prev1 != nullptr) {
+        prev1->next = node2;
+    } else {
+        head = node2;
+    }
+
+    // If node2 is head of linked list
+    if (prev2 != nullptr) {
+        prev2->next = node1;
+    } else {
+        head = node1;
+    }
+
+    // Swap next pointers
+    ListNode* temp = node2->next;
+    node2->next = node1->next;
+    node1->next = temp;
+
 }
 
-void List::sort() {
-    ListNode* p1 = head;
+void List::sort()
+{
+    ListNode *node = head;
+    bool swapped;
 
-    for (int i=0; i<size-1; i++) {
-        p1 = head;
+    for (int i = 0; i < size - 1; i++)
+    {
+        node = head;
+        swapped = false;
 
-        for (int j=0; j<size-i-1; j++) {
-            if (p1->next != nullptr) {
-                if ((p1->data).score < (p1->next->data).score) {
-                    swap(p1, p1->next);
-                } else if ((p1->data).score == (p1->next->data).score) {
-                    if ((p1->data).step < (p1->next->data).step) {
-                        swap(p1, p1->next);
-                    }
+        for (int j = 0; j < size - i - 1; j++)
+        {
+            if (node->next != nullptr)
+            {
+                if ((node->data).score < (node->next->data).score)
+                {
+                    swap(head, node, node->next);
+                    swapped = true;
+                } else {
+                    node = node->next;
                 }
-            } 
+            }
 
-            p1 = p1->next;
-
+        if (!swapped)
+            break;
+            
         }
-
     }
 }

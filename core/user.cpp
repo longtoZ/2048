@@ -1,129 +1,159 @@
 #include "user.h"
 
-#define USER_FILE_PATH "./database/user.txt"
+#define USER_FILE_PATH "./database/user.bin"
 
 int userLogin(User &user) {
-    
+    string tmpUsername;
+    string tmpPassword;
+
     cout << endl << endl;
     cout << "Press [x] to exit login menu!\n\n";
 
     cout << "Username: ";
-    cin >> user.username;
+    cin >> tmpUsername;
 
     // Exit immediately
-    if (user.username == "x") {
+    if (tmpUsername == "x") {
         return -1;
     }
     
     cout << "Password: ";
-    cin >> user.password;
+    cin >> tmpPassword;
 
     // Exit immediately
-    if (user.password == "x") {
+    if (tmpPassword == "x") {
         return -1;
     }
 
     ifstream ifile;
-    ifile.open(USER_FILE_PATH);
+    ifile.open(USER_FILE_PATH, ios::binary);
 
     if (!ifile) {
+        cout << RED_TEXT << "Error: Could not open file '" << USER_FILE_PATH << "' for reading." << RESET_FORMAT << endl;
         return -1;
     }
 
-    string line = "";
+    while (true) {
+        char* username = new char[USERNAME_SIZE];
+        char* password = new char[PASSWORD_SIZE];
 
-    while (getline(ifile, line)) {
-        int space = line.find(' ', 0);
+        ifile.read(username, USERNAME_SIZE);
+        ifile.read(password, PASSWORD_SIZE);
 
-        string username = line.substr(0, space);
-        string password = line.substr(space+1, line.length()-space-1);
-
-        if (username == user.username && password == user.password) {
+        if (strcmp(username, convertStringToChar(tmpUsername)) == 0 && strcmp(password, convertStringToChar(tmpPassword)) == 0) {
+            user.username = username;
+            user.password = password;
+            cout << GREEN_TEXT << "\nLogin succesfully! Press any key to continue." << RESET_FORMAT << endl;
+            getch();
             return 1;
+        }
+
+        if (ifile.eof()) {
+            break;
         }
     }
 
     ifile.close();
 
+    cout << RED_TEXT << "\nUser or password is incorrect! Press any key to try again." << RESET_FORMAT << endl;
+    getch();
     return 2;
 }
 
-void userRegister() {
+int userRegister(User &user) {
+    bool hasError = false;
     cout << endl << endl;
     cout << "Press [x] to exit login menu!\n\n";
 
-    User user;
+    string tmpUsername;
+    string tmpPassword;
 
-    while (true) {
-        cout << "New username: ";
-        getline(cin, user.username);
 
-        if (user.username == "x") {
-            return ;
-        }
+    cout << "New username: ";
+    getline(cin, tmpUsername);
 
-        if (user.username.length() < 1 || user.username.length() > 16) {
-            cout << YELLOW_TEXT << "Username's length must be greater than 1 and less than 16 character(s)! Press any key to try again." << RESET_FORMAT << endl;
-            getch();
-            continue;
-        }
+    if (tmpUsername == "x") {
+        return -1;
+    }
 
-        if (hasSpecialChar(user.username)) {
-            cout << YELLOW_TEXT << "Username cannot contain any special character! Press any key to try again." << RESET_FORMAT << endl;
-            getch();
-            continue;
-        }
+    cout << "New password: ";
+    getline(cin, tmpPassword);
 
-        break;
+    if (tmpPassword == "x") {
+        return -1;
+    }
+
+    if (tmpUsername.length() < 1 || tmpUsername.length() > 16) {
+        cout << YELLOW_TEXT << "Username's length must be greater than 1 and less than 16 character(s)! Press any key to try again." << RESET_FORMAT << endl;
+        hasError = true;
+    }
+
+    if (hasSpecialChar(tmpUsername)) {
+        cout << YELLOW_TEXT << "Username cannot contain any special character! Press any key to try again." << RESET_FORMAT << endl;
+        hasError = true;
+    }
+
+    if (tmpPassword.length() < 8 || tmpPassword.length() > 32) {
+        cout << YELLOW_TEXT << "Password's length must be greater than 8 and less than 32 character(s)! Press any key to try again." << RESET_FORMAT << endl;
+        hasError = true;
+    } 
+
+    if (hasError) {
+        getch();
+        return 0;
+    }
+    
+    if (!fileExist(USER_FILE_PATH)) {
+        createEmptyFile(USER_FILE_PATH);
+    }
+
+    ifstream ifile;
+    ifile.open(USER_FILE_PATH, ios::binary);
+
+    if (!ifile.is_open()) {
+        cout << RED_TEXT << "Error: Could not open file '" << USER_FILE_PATH << "' for reading." << RESET_FORMAT << endl;
+        return -1;
     }
 
     while (true) {
-        cout << "New password: ";
-        cin >> user.password;
+        char* username = new char[USERNAME_SIZE];
+        char* password = new char[PASSWORD_SIZE];
 
-        if (user.password == "x") {
-            return;
+        ifile.read(username, USERNAME_SIZE);
+
+        if (strcmp(username, convertStringToChar(tmpUsername)) == 0) {
+            cout << YELLOW_TEXT << "Username already exists! Press any key to try again." << RESET_FORMAT << endl;
+            getch();
+            return 0;
         }
 
-        if (user.password.length() < 8 || user.password.length() > 32) {
-            cout << YELLOW_TEXT << "Password's length must be greater than 8 and less than 32 character(s)! Press any key to try again." << RESET_FORMAT << endl;
-            getch();
-        } else {
+        if (ifile.eof()) {
             break;
         }
     }
-    
-    ifstream ifile;
-    ifile.open(USER_FILE_PATH);
-    string line = "";
 
-    while (getline(ifile, line)) {
-        int space = line.find(' ', 0);
+    ofstream outputFile;
+    outputFile.open(USER_FILE_PATH, ios::binary | ios::app);
 
-        string username = line.substr(0, space);
-        string password = line.substr(space+1, line.length()-space-1);
-
-        if (username == user.username) {
-            cout << YELLOW_TEXT << "User has already existed! Press any key to try again." << RESET_FORMAT << endl;
-            getch();
-            return;
-        }
+    if (!outputFile.is_open()) {
+        cout << RED_TEXT << "Error: Could not open file '" << USER_FILE_PATH << "' for writing." << RESET_FORMAT << endl;
+        return -1;
     }
 
+    // Seek to the end of the file
+    outputFile.seekp(ios::end);
 
-    ofstream ofile;
-    ofile.open(USER_FILE_PATH, ios::app);
+    outputFile.write(convertStringToChar(tmpUsername), USERNAME_SIZE);
+    outputFile.write(convertStringToChar(tmpPassword), PASSWORD_SIZE);
 
-    if (!ofile) {
-        return;
-    }
-
-    string data = user.username + " " + user.password + "\n";
-    ofile << data;
+    // Creater user data files
+    createUserFiles(tmpUsername);
 
     cout << endl;
     cout << GREEN_TEXT << "You have successfully created a new account!. Press any key to continue." << RESET_FORMAT << endl;
     getch();
+
+    return 1;
 }
 
 int userDelete(User& user) {
@@ -143,15 +173,15 @@ int userDelete(User& user) {
         key = getch();
 
         if (key == Y) {
-            deleteDirectory("database\\user\\" + user.username);
-            deleteInfo(user.username);
+            deleteDirectory("database\\user\\" + string(user.username));
+            deleteInfo(string(user.username));
             cout << GREEN_TEXT << "You have successfully deleted your account! Press any key to go back." << RESET_FORMAT << endl;
+            cleanUser(user);
             getch();
             return 1;
         } else if (key == N_KEY) {
             return 2;
         }
-
     }
 
     return -1;

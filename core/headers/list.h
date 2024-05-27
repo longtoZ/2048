@@ -16,6 +16,6 @@ struct List {
     void init();
     void insertHead(Data data);
     void insertTail(Data data);
-    void swap(ListNode* &p1, ListNode* &p2);
+    void swap(ListNode*& head, ListNode* node1, ListNode* node2);
     void sort();
 };

@@ -230,19 +230,29 @@ void moveDown(Gameplay &gameplay, int &moved) {
 void endGame(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, const high_resolution_clock::time_point& start_time, User &user) {
     string elapsed_time = calculate_elapsed_time_string(start_time);
     
-    storeAchievement(gameplay.size, gameplay.score, gameplay.step, elapsed_time, user);
+    char choice = 'y';
+    cout << YELLOW_TEXT << "\tGame ended. Do you want to store the current achievement? [Y/N]" << RESET_FORMAT << endl;
+
+    cin >> choice;
+
+    choice = tolower(choice);
+
+    if (choice == 'y') {
+        storeAchievement(gameplay.size, gameplay.score, gameplay.step, elapsed_time, user);
+        cout << GREEN_TEXT << "\tAchievement saved. Press any key to go back to menu." << RESET_FORMAT << endl;
+        getch();
+    }
+    
     cleanBoard(gameplay);
     cleanEmptyPos(gameplay);
     cleanStack(undoStack);
     cleanStack(redoStack);
 }
 
-bool gameOver(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, const high_resolution_clock::time_point& start_time, User &user) {
+bool gameOver(Gameplay &gameplay) {
 
     int n = gameplay.size;
     int** &board = gameplay.board;
-    int** &emptyPos = gameplay.emptyPos;
-    int &emptyLeft = gameplay.emptyLeft;
 
     // Compare all numbers with surrounding ones, if there is no same number -> Game over
     for (int i=0; i<n; i++) {
@@ -261,12 +271,26 @@ bool gameOver(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, const high
         }
     }
 
-    endGame(gameplay, undoStack, redoStack, start_time, user);
-
     return true;
 }
 
-void undo(Gameplay &gameplay, Stack &undoStack, Stack &redoStack) {
+bool gameWon(Gameplay &gameplay) {
+    int n = gameplay.size;
+    int** &board = gameplay.board;
+
+    // Compare all numbers with 2048, if there is a 2048 number -> Game won
+    for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
+            if (board[i][j] == 2048) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int undo(Gameplay &gameplay, Stack &undoStack, Stack &redoStack) {
     if (!undoStack.empty() && (undoStack.head)->next != nullptr ) {
 
         // Push stack from undoStack to redoStack
@@ -294,13 +318,14 @@ void undo(Gameplay &gameplay, Stack &undoStack, Stack &redoStack) {
         gameplay.size = prev.size;
         gameplay.step = prev.step;
 
+        return 1;
     } else {
-        cout << "Cannot undo!" << endl;
+        return 0;
     }
 
 }
 
-void redo(Gameplay &gameplay, Stack &undoStack, Stack &redoStack) {
+int redo(Gameplay &gameplay, Stack &undoStack, Stack &redoStack) {
     if (!redoStack.empty()) {
 
         // Push stack from redoStack to undoStack
@@ -328,8 +353,10 @@ void redo(Gameplay &gameplay, Stack &undoStack, Stack &redoStack) {
         gameplay.size = next.size;
         gameplay.step = next.step;
 
+        return 1;
+
     } else {
-        cout << "Cannot redo!" << endl;
+        return 0;
     }
 
 }

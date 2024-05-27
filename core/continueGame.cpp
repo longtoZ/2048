@@ -9,27 +9,24 @@ void saveBoard(Gameplay &gameplay, User &user) {
     int &step = gameplay.step;
     int &n = gameplay.size;
 
-    string fullPath = FILE_PATH + user.username + "/prevboard.txt";
+    string fullPath = FILE_PATH + string(user.username) + "/prevboard.bin";
 
     ofstream ofile;
-    ofile.open(fullPath);
+    ofile.open(fullPath, ios::binary);
 
-    if (!ofile) {
-        return;
+    if (!ofile.is_open()) {
+        cerr << "Error: Cannot open file " << fullPath << endl;
     }
 
-    ofile << to_string(score) + "\n";
-    ofile << to_string(step) + "\n";
-    ofile << to_string(n) + "\n";
+    // Save score, step and size
+    ofile.write((char*)&score, sizeof(score));
+    ofile.write((char*)&step, sizeof(step));
+    ofile.write((char*)&n, sizeof(n));
 
     for (int i=0; i<n; i++) {
-        string line = "";
         for (int j=0; j<n; j++) {
-            line += to_string(board[i][j]) + " ";
+            ofile.write((char*)&board[i][j], sizeof(board[i][j]));
         }
-        line += "\n";
-
-        ofile << line;
     }
 
     ofile.close();
@@ -42,27 +39,25 @@ void getPrevBoard(Gameplay &gameplay, User &user) {
     // Initialize size for board
     gameplay.size = 0;
 
-    string fullPath = FILE_PATH + user.username + "/prevboard.txt";
+    string fullPath = FILE_PATH + string(user.username) + "/prevboard.bin";
 
     ifstream ifile;
-    ifile.open(fullPath);
+    ifile.open(fullPath, ios::binary);
 
-    if (!ifile) {
-        return;
+    if (!ifile.is_open()) {
+        cerr << "Error: Cannot open file " << fullPath << endl;
     }
 
     // Get score, step and size
-    getline(ifile, line);
+    ifile.read((char*)&score, sizeof(score));
 
-    // Check if file is empty
-    if (line == "")
+    if (ifile.eof()) {
+        cout << "No previous game found!" << endl;
         return;
+    }
 
-    score = stoi(line);
-    getline(ifile, line);
-    step = stoi(line);
-    getline(ifile, line);
-    n = stoi(line);
+    ifile.read((char*)&step, sizeof(step));
+    ifile.read((char*)&n, sizeof(n));
 
     // Generate board
     gameplay.size = n;
@@ -74,14 +69,11 @@ void getPrevBoard(Gameplay &gameplay, User &user) {
     int emptyCount = 0;
 
     // Insert data into board
+    int num;
     for (int i=0; i<n; i++) {
-        getline(ifile, line);
-
-        int start = 0;
-        int end = line.find(' ', start);
 
         for (int j=0; j<n; j++) {
-            int num = stoi(line.substr(start, end-start));
+            ifile.read((char*)&num, sizeof(num));
 
             if (num == 0) {
                 gameplay.emptyPos[emptyCount][0] = i;
@@ -92,9 +84,6 @@ void getPrevBoard(Gameplay &gameplay, User &user) {
             }
 
             gameplay.board[i][j] = num;
-
-            start = end + 1;
-            end = line.find(' ', start);
         }
     }
 

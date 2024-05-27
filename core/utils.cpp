@@ -44,125 +44,6 @@ bool compareByScore(const Data &a, const Data &b) {
     return (a.score > b.score);
 }
 
-void storeBestScore(User &user) {
-
-    Data bestScore;
-    string line = "";
-    bool gotBestScore = false;
-
-    string fullPath = FILE_PATH + user.username + "/leaderboard.txt";
-
-    ifstream ifile;
-    ifile.open(fullPath);
-
-    if (!ifile) {
-        return;
-    }
-    
-    while (getline(ifile, line)) {
-        int first_space = line.find(' ', 0);
-        int second_space = line.find(' ', first_space+1);
-        int third_space = line.find(' ', second_space+1);
-        int fourth_space = line.find(' ', third_space+1);
-
-        // Parse date
-        string date = line.substr(0, first_space);
-
-        // Parse size
-        int size = stoi(line.substr(first_space+1, second_space-first_space-1));
-
-        // Parse score
-        int score = stoi(line.substr(second_space+1, third_space-second_space-1));
-
-        // Parse step
-        int step = stoi(line.substr(third_space+1, second_space-third_space-1));
-
-        // Parse interval
-        string interval = line.substr(fourth_space+1, line.length()-fourth_space-1);
-
-        if (score > bestScore.score) {
-            bestScore.date = date;
-            bestScore.size = size;
-            bestScore.score = score;
-            bestScore.step = step;
-            bestScore.interval = interval;
-            gotBestScore = true;
-        }
-    }
-
-    ifile.close();
-
-    if (gotBestScore) {
-        string bestFullPath= FILE_PATH + user.username + "/best.txt";
-
-        ofstream ofile;
-        ofile.open(bestFullPath);
-
-        ofile << bestScore.date << " " << bestScore.size << " " << bestScore.score << " " << bestScore.step << " " << bestScore.interval << endl;
-
-        ofile.close();
-    }
-
-}   
-
-Data getBestScore(User &user) {
-    Data bestScore;
-    string line = "";
-    string fullPath = FILE_PATH + user.username + "/best.txt";
-
-    ifstream ifile;
-    ifile.open(fullPath);
-
-    if (!ifile) {
-        return bestScore;
-    }
-
-    getline(ifile, line);
-    ifile.close();
-
-    if (line != "") {
-
-        // Parse date
-        string day = line.substr(0,2);
-        string month = line.substr(2,2);
-        string year = line.substr(4,4);
-
-        string hour = line.substr(9,2);
-        string minute = line.substr(11,2);
-        string second = line.substr(13,2);
-
-        string date = day + "-" + month + "-" + year + " " + hour + ":" + minute + ":" + second;
-
-        int first_space = line.find(' ', 0);
-        int second_space = line.find(' ', first_space+1);
-        int third_space = line.find(' ', second_space+1);
-        int fourth_space = line.find(' ', third_space+1);
-
-        // Parse size
-        int size = stoi(line.substr(first_space+1, second_space-first_space-1));
-
-        // Parse score
-        int score = stoi(line.substr(second_space+1, third_space-second_space-1));
-
-        // Parse step
-        int step = stoi(line.substr(third_space+1, second_space-third_space-1));
-
-        // Parse interval
-        string interval = line.substr(fourth_space+1, line.length()-fourth_space-1);
-
-        bestScore.date = date;
-        bestScore.size = size;
-        bestScore.score = score;
-        bestScore.step = step;
-        bestScore.interval = interval;
-
-    }
-
-    return bestScore;
-
-}
-
-
 string calculate_elapsed_time_string(const high_resolution_clock::time_point& start_time) {
   // Get the ending time
   auto end_time = high_resolution_clock::now();
@@ -184,34 +65,89 @@ string calculate_elapsed_time_string(const high_resolution_clock::time_point& st
   return ss.str();
 }
 
-void createDirectory(const string& path) {
+void createDirectory(string path) {
+    path = replaceAll(path.substr(2, path.length() - 2), "/", "\\");
     string command = "md " + path + " >nul 2>&1";
     int return_code = system(command.c_str());
 
     if (return_code == 0) {
-        // cout << "Directory \"" << path << "\" created successfully." << endl;
+        cout << "Directory \"" << path << "\" created successfully." << endl;
     } else {
-        // cerr << "Error creating directory " << path << endl;
+        cerr << "Error creating directory " << path << endl;
     }
 }
 
+string replaceAll(const string& original, const string& toReplace, const string& replacement) {
+    // Create a copy of the original string to work with
+    string result = original;
+
+    // Find the first occurrence of the substring to replace
+   size_t pos = result.find(toReplace);
+
+    // Loop until no more occurrences are found
+    while (pos != string::npos) {
+        // Replace the found substring with the replacement string
+        result.replace(pos, toReplace.length(), replacement);
+
+        // Find the next occurrence of the substring to replace
+        pos = result.find(toReplace, pos + replacement.length());
+    }
+
+    // Return the modified string
+    return result;
+}
+
+void createEmptyFile(string path) {
+    path = replaceAll(path.substr(2, path.length() - 2), "/", "\\");
+    string command = "copy NUL " + path + " >nul 2>&1";
+    int return_code = system(command.c_str());
+
+    if (return_code == 0) {
+        cout << "File \"" << path << "\" created successfully." << endl;
+    } else {
+        cerr << "Error creating file " << path << endl;
+        cout << command << endl;
+    }
+}
+
+bool fileExist (const string& name) {
+    ifstream f(name.c_str());
+    return f.good();
+}
+
+void createUserFiles(const string& username) {
+    string fullPath = FILE_PATH + username;
+    createDirectory(fullPath);
+    createEmptyFile(fullPath + "/leaderboard.bin");
+    createEmptyFile(fullPath + "/best.bin");
+    createEmptyFile(fullPath + "/prevboard.bin");
+}
+
 void deleteInfo(string username) {
-    string oldFile = "./database/user.txt";
-    string newFile = "./database/updatedUser.txt";
+    string oldFile = "./database/user.bin";
+    string newFile = "./database/updatedUser.bin";
 
     ifstream ifile;
     ofstream ofile;
-    ifile.open(oldFile);
-    ofile.open(newFile);
 
-    string line = "";
+    ifile.open(oldFile, ios::binary);
+    ofile.open(newFile, ios::binary);
 
-    if (!ifile || !ofile)
+    if (!ifile || !ofile) {
+        cout << "Error: Could not open file for reading or writing." << endl;
         return;
-    
-    while (getline(ifile, line)) {
-        if (line.find(username, 0) > line.length()) {
-            ofile << line << endl;
+    }
+
+    while (!ifile.eof()) {
+        char* tmpUsername = new char[USERNAME_SIZE];
+        char* tmpPassword = new char[PASSWORD_SIZE];
+
+        ifile.read(tmpUsername, USERNAME_SIZE);
+        ifile.read(tmpPassword, PASSWORD_SIZE);
+
+        if (strcmp(tmpUsername, convertStringToChar(username)) != 0) {
+            ofile.write(tmpUsername, USERNAME_SIZE);
+            ofile.write(tmpPassword, PASSWORD_SIZE);
         }
     }
 
@@ -240,4 +176,49 @@ bool hasSpecialChar(const string& str) {
         }
     }
     return false;
+}
+
+char* formatDateChar(char* date) {
+    string str = date;
+    string formattedDate = str.substr(0, 2) + "-" + str.substr(2, 2) + "-" + str.substr(4, 4) + " " + str.substr(9, 2) + ":" + str.substr(11, 2) + ":" + str.substr(13, 2);
+    return convertStringToChar(formattedDate);
+}
+
+int generateSelections(string options[], int n, string pre, string post) {
+    int chosen = 0;
+    int maxLength = 0;
+
+    for (int i=0; i<n; i++) {
+        if (options[i].length() > maxLength) {
+            maxLength = options[i].length();
+        }
+    }
+
+    while (true) {
+        system("cls");
+
+        cout << pre << endl;
+
+        for (int i=0; i<n; i++) {
+            if (i == chosen) {
+                cout << BOLD_TEXT << WHITE_BACKGROUND_COLOR << BLACK_TEXT << "\t> " << options[i] << setw(maxLength - options[i].length() + 2) << " <" << RESET_FORMAT << endl << endl;
+            } else {
+                cout << "\t  " << options[i] << endl << endl;
+            }
+        }
+
+        cout << post << endl;
+
+        int key = getch();
+
+        if (key == ENTER) {
+            break;
+        } else if (key == KEYDOWN) {
+            chosen = chosen < n-1 ? chosen+1 : 0; 
+        } else if (key == KEYUP) {
+            chosen = chosen > 0 ? chosen-1 : n-1;
+        }
+    }
+
+    return chosen+1;
 }

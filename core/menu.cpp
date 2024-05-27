@@ -2,82 +2,35 @@
 using namespace std;
 
 int userMenu() {
-    int key = 0;
-
-    while (true) {
-        system("cls");
-
-        printUserMenu();
-
-        key = getch();
-
-        if (key == ONE) {
-            return 1;
-        } else if (key == TWO) {
-            return 2;
-        } else if (key == THREE) {
-            return 3;
-        } else {
-            continue;
-        }
-    }
-
-    return -1;
+    return printUserMenu();
 }
 
 int startMenu(User &user) {
-    int key = 0;
-
-    while (true) {
-        system("cls");
-
-        printStartMenu(user);
-
-        key = getch();
-
-        if (key == ONE) {
-            return 1;
-        } else if (key == TWO) {
-            return 2;
-        } else if (key == THREE) {
-            return 3;
-        } else if (key == FOUR) {
-            return 4;
-        } else if (key == FIVE) {
-            return 5;
-        } else if (key == SIX) {
-            return 6;
-        } else {
-            continue;
-        }
-    }
-
-    return -1;
-
+    return printStartMenu(user);
 }
 
 void startGame(Gameplay &gameplay, User &user) {
 
     int key = 0;
-    int size = 0;
 
-    while (true) {
-        system("cls");
+    // Set up game
+    string boardSizeOptions[] = {
+        "4x4",
+        "5x5",
+        "6x6",
+        "7x7",
+        "8x8",
+        "9x9",
+        "10x10",
+    };
 
-        cout << "Choose board size (4x4, 5x5, ..., NxN): ";
-        
-        cin >> key;
+    string undoRedoSelections[] = {
+        "Enable",
+        "Disable"
+    };
 
-        if (key > 0) {
-            size = key;
-        } else {
-            cout << "Please choose a valid size!" << endl;
-            continue;
-        }
-
-        if (size > 0)
-            break;
-    }
+    int size = generateSelections(boardSizeOptions, 7, "Choose board size (4x4, 5x5, ..., NxN): ", "") + 3;
+    gameplay.canUndoRedo = generateSelections(undoRedoSelections, 2, "Use undo/redo feature?", "") == 1 ? true : false;
 
     int moved = 0;
 
@@ -103,6 +56,9 @@ void startGame(Gameplay &gameplay, User &user) {
     // Set start point
     auto start_time = high_resolution_clock::now();
 
+    // Set eternal playing mode
+    bool eternal = false;
+
     while (true) {
         key = getch();
         
@@ -134,29 +90,73 @@ void startGame(Gameplay &gameplay, User &user) {
             
             printFull(gameplay, undoStack, redoStack, user);
 
-            if (gameOver(gameplay, undoStack, redoStack, start_time, user)) {
-                cout << "Game over. Press any key to go to menu..." << endl;
-                getch();
-                break;
+            if (gameOver(gameplay) && !eternal) {
+                char choice = 'y';
+
+                cout << "\n\tGame over. Do you want to continue playing? [Y/N]" << endl;
+                
+                cin >> choice;
+
+                choice = tolower(choice);
+
+                if (choice == 'y') {
+                    eternal = true;
+                    continue;
+                } else {
+                    cout << "\tGame ended!" << endl;
+                    endGame(gameplay, undoStack, redoStack, start_time, user);
+                    break;
+                }
+            } else if (gameWon(gameplay) && !eternal) {
+                char choice = 'y';
+
+                cout << "\n\tYou won at 2048. Do you want to continue playing? [Y/N]" << endl;
+                
+                cin >> choice;
+
+                choice = tolower(choice);
+
+                if (choice == 'y') {
+                    eternal = true;
+                    continue;
+                } else {
+                    cout << "\tGame ended!" << endl;
+                    endGame(gameplay, undoStack, redoStack, start_time, user);
+                    break;
+                }
             }
 
         } else if (key == X) {
-            cout << "Game over. Press any key to go to menu..." << endl;
+            cout << "\tGame ended!" << endl;
             endGame(gameplay, undoStack, redoStack, start_time, user);
-            getch();
             break;
         } else if (key == S) {
-            cout << "Game saved. Press any key to go to menu..." << endl;
+            cout << GREEN_TEXT << "\tGame saved!" << RESET_FORMAT << endl;
             saveBoard(gameplay, user);
             endGame(gameplay, undoStack, redoStack, start_time, user);
-            getch();
             break;
         } else if (key == U) {
-            undo(gameplay, undoStack, redoStack);
-            printFull(gameplay, undoStack, redoStack, user);
+            if (gameplay.canUndoRedo) {
+                int state = undo(gameplay, undoStack, redoStack);
+                printFull(gameplay, undoStack, redoStack, user);
+                if (state == 0) {
+                    cout << YELLOW_TEXT << "\tNo step to undo" << RESET_FORMAT << endl;
+                }
+            } else {
+                printFull(gameplay, undoStack, redoStack, user);
+                cout << YELLOW_TEXT << "\n\tUndo feature is disabled. Please start a new game and enable it!" << RESET_FORMAT << endl;            
+            }
         } else if (key == R) {
-            redo(gameplay, undoStack, redoStack);
-            printFull(gameplay, undoStack, redoStack, user);
+            if (gameplay.canUndoRedo) {
+                int state = redo(gameplay, undoStack, redoStack);
+                printFull(gameplay, undoStack, redoStack, user);
+                if (state == 0) {
+                    cout << YELLOW_TEXT << "\tNo step to redo" << RESET_FORMAT << endl;
+                }
+            } else {
+                printFull(gameplay, undoStack, redoStack, user);
+                cout << YELLOW_TEXT << "\n\tRedo feature is disabled. Please start a new game and enable it!" << RESET_FORMAT << endl;            
+            }
         }
     }
 }
@@ -175,6 +175,14 @@ void startPrevGame(Gameplay &gameplay, User &user) {
         return;
     }
 
+    // Set up game 
+    string undoRedoSelections[] = {
+        "Enable",
+        "Disable"
+    };
+
+    gameplay.canUndoRedo = generateSelections(undoRedoSelections, 2, "Use undo/redo feature?", "") == 1 ? true : false;
+
     Stack undoStack;
     Stack redoStack;
 
@@ -187,6 +195,9 @@ void startPrevGame(Gameplay &gameplay, User &user) {
 
     // Set start point
     auto start_time = high_resolution_clock::now();
+
+    // Set eternal playing mode
+    bool eternal = false;
 
     while (true) {
         key = getch();
@@ -219,30 +230,73 @@ void startPrevGame(Gameplay &gameplay, User &user) {
             
             printFull(gameplay, undoStack, redoStack, user);
 
-            if (gameOver(gameplay, undoStack, redoStack, start_time, user)) {
-                cout << "Game over. Press any key to go to menu..." << endl;
-                getch();
-                break;
-            }
+            if (gameOver(gameplay) && !eternal) {
+                char choice = 'y';
 
+                cout << "\n\tGame over. Do you want to continue playing? [Y/N]" << endl;
+                
+                cin >> choice;
+
+                choice = tolower(choice);
+
+                if (choice == 'y') {
+                    eternal = true;
+                    continue;
+                } else {
+                    cout << "\tGame ended!" << endl;
+                    endGame(gameplay, undoStack, redoStack, start_time, user);
+                    break;
+                }
+            } else if (gameWon(gameplay) && !eternal) {
+                char choice = 'y';
+
+                cout << "\n\tYou won at 2048. Do you want to continue playing? [Y/N]" << endl;
+                
+                cin >> choice;
+
+                choice = tolower(choice);
+
+                if (choice == 'y') {
+                    eternal = true;
+                    continue;
+                } else {
+                    cout << "\tGame ended!" << endl;
+                    endGame(gameplay, undoStack, redoStack, start_time, user);
+                    break;
+                }
+            }
+            
         } else if (key == X) {
-            cout << "Game over. Press any key to go to menu..." << endl;
-            getch();
+            cout << "\tGame ended!" << endl;
             endGame(gameplay, undoStack, redoStack, start_time, user);
             break;
         } else if (key == S) {
-            cout << "Game saved. Press any key to go to menu..." << endl;
+            cout << GREEN_TEXT << "\tGame saved!" << RESET_FORMAT << endl;
             saveBoard(gameplay, user);
             endGame(gameplay, undoStack, redoStack, start_time, user);
-            getch();
             break;
         } else if (key == U) {
-            undo(gameplay, undoStack, redoStack);
-            printFull(gameplay, undoStack, redoStack, user);
+            if (gameplay.canUndoRedo) {
+                int state = undo(gameplay, undoStack, redoStack);
+                printFull(gameplay, undoStack, redoStack, user);
+                if (state == 0) {
+                    cout << YELLOW_TEXT << "\tNo step to undo" << RESET_FORMAT << endl;
+                }
+            } else {
+                printFull(gameplay, undoStack, redoStack, user);
+                cout << YELLOW_TEXT << "\n\tUndo feature is disabled. Please start a new game and enable it!" << RESET_FORMAT << endl;            
+            }
         } else if (key == R) {
-            redo(gameplay, undoStack, redoStack);
-            printFull(gameplay, undoStack, redoStack, user);
+            if (gameplay.canUndoRedo) {
+                int state = redo(gameplay, undoStack, redoStack);
+                printFull(gameplay, undoStack, redoStack, user);
+                if (state == 0) {
+                    cout << YELLOW_TEXT << "\tNo step to redo" << RESET_FORMAT << endl;
+                }
+            } else {
+                printFull(gameplay, undoStack, redoStack, user);
+                cout << YELLOW_TEXT << "\n\tRedo feature is disabled. Please start a new game and enable it!" << RESET_FORMAT << endl;            
+            }
         }
     }
 }
-

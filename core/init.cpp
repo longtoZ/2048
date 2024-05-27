@@ -18,24 +18,31 @@ void run() {
                     int loginState = userLogin(user);
 
                     if (loginState == 1) {
-                        // Login successfully
-                        string fullPath = "database\\user\\" + user.username;
-                        createDirectory(fullPath);
-                        cout << GREEN_TEXT << "\nLogin succesfully! Press any key to continue." << RESET_FORMAT << endl;
-                        getch();
                         continueToMenu = true;
                         break;
                     } else if (loginState == 2) {
-                        cout << RED_TEXT << "\nUser or password is incorrect! Press any key to try again." << RESET_FORMAT << endl;
-                        getch();
+                        continue;
                     } else if (loginState == -1) {
                         break;
                     }
                 }
             } else if (userOption == 2) {
-                system("cls");
-                userRegister();
+                while (true) {
+                    system("cls");
+
+                    int registerState = userRegister(user);
+
+                    if (registerState == 1) {
+                        break;
+                    } else if (registerState == 0) {
+                        continue;
+                    } else if (registerState == -1) {
+                        break;
+                    }
+                }
             } else if (userOption == 3) {
+                printLeaderboard();
+            } else if (userOption == 4) {
                 exit(0);
             }
 
@@ -48,12 +55,11 @@ void run() {
             system("cls");
         
             int menuOption = startMenu(user);
+            Gameplay gameplay;
 
             if (menuOption == 1) {
-                Gameplay gameplay;
                 startGame(gameplay, user);
             } else if (menuOption == 2) {
-                Gameplay gameplay;
                 startPrevGame(gameplay, user);
             } else if (menuOption == 3) {
                 printAchievement(user);
@@ -61,11 +67,9 @@ void run() {
                 printLeaderboard();
             } else if (menuOption == 5) {
                 int res = userDelete(user);
-                
-                if (res == 1) {
-                    break;
-                }
+                if (res == 1) break;
             } else if (menuOption == 6) {
+                cleanUser(user);
                 break;
             }
 
