@@ -21,7 +21,7 @@ To compile and run the game, follow these steps:
 4. Run the executable:
 
     ```shell
-    ./2048.exe
+    2048.exe
     ```
 
 ## 2. How to Play
