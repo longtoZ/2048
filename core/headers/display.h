@@ -10,14 +10,16 @@
 using namespace std;
 
 int convertCellWidth(int n);
+int printStartMenu(User &user);
+int printUserMenu();
+
+string centerBoardNumber(int n, int length, string txt, string bg, int type);
 string convertNumberToColor(int n);
-void emptyLine(int n, int length, string bg);
-void centerBoardNumber(int n, int length, string txt, string bg, int type);
-void emptyCell(int n, int length, string bg, int type);
+string emptyLine(int n, int length, string bg);
+string emptyCell(int n, int length, string bg, int type);
+
 void printBoard(Gameplay &gameplay);
 void printGameplayMenu(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, User &user);
 void printFull(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, User &user);
-int printStartMenu(User &user);
-int printUserMenu();
 void printAchievement(User &user);
-void printLeaderboard();
+void printLeaderboard(User &user, bool highlightUser = false);

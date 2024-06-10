@@ -1,215 +1,276 @@
 #include <display.h>
 
-int convertCellWidth(int n) {
+int convertCellWidth(int n)
+{
     if (n < 5)
         return 7 + n - 4;
     else
+        // Set max width 9 for cell
         return 9;
 }
 
-int convertCellHeight(int n) {
+int convertCellHeight(int n)
+{
     if (n < 5)
         return n;
-    else;
+    else
+        // Set max height 5 for cell
         return 5;
 }
 
-string convertNumberToColor(int n) {
+string convertNumberToColor(int n)
+{
     string color = EMPTY_POS_COLOR;
 
-    // Set color for each number
-    if (n==2) {
+    // Set color for each cell number
+    if (n == 2)
+    {
         color = TWO_BACKGROUND_COLOR;
-    } else if (n==4) {
+    }
+    else if (n == 4)
+    {
         color = FOUR_BACKGROUND_COLOR;
-    } else if (n==8) {
+    }
+    else if (n == 8)
+    {
         color = EIGTH_BACKGROUND_COLOR;
-    } else if (n==16) {
+    }
+    else if (n == 16)
+    {
         color = SIXTEEN_BACKGROUND_COLOR;
-    } else if (n==32) {
+    }
+    else if (n == 32)
+    {
         color = THIRTY_TWO_BACKGROUND_COLOR;
-    } else if (n==64) {
+    }
+    else if (n == 64)
+    {
         color = SIXTY_FOUR_BACKGROUND_COLOR;
-    } else if (n==128) {
+    }
+    else if (n == 128)
+    {
         color = ONE_TWENTY_EIGTH_BACKGROUND_COLOR;
-    } else if (n==256) {
+    }
+    else if (n == 256)
+    {
         color = TWO_FIFTY_SIX_BACKGROUND_COLOR;
-    } else if (n==512) {
+    }
+    else if (n == 512)
+    {
         color = FIVE_TWELVE_BACKGROUND_COLOR;
-    } else if (n==1024) {
+    }
+    else if (n == 1024)
+    {
         color = TEN_TWENTY_FOUR_COLOR;
-    } else if (n==2048) {
+    }
+    else if (n == 2048)
+    {
         color = TWENTY_FORTY_EIGHT_COLOR;
-    } else if (n==4096) {
+    }
+    else if (n == 4096)
+    {
         color = FORTY_NINETY_SIX_COLOR;
     }
 
     return color;
 }
 
-void centerBoardNumber(int n, int length, string txt, string bg, int type = 0) {
+string centerBoardNumber(int n, int length, string txt, string bg, int type = 0)
+{
     string color = type == 0 ? convertNumberToColor(n) : CELL_BACKGROUND_COLOR;
     int nCopy = n;
-    int count =  n == 0 ? 1 : 0;
-    while (nCopy > 0) {
+    int count = n == 0 ? 1 : 0;
+    while (nCopy > 0)
+    {
         nCopy /= 10;
         count++;
     }
 
-    int leftSpaces = (length-count)/2;
-    int rightSpaces = length-leftSpaces-count;
+    int leftSpaces = (length - count) / 2;
+    int rightSpaces = length - leftSpaces - count;
     string s = string(leftSpaces, ' ') + txt + to_string(n) + string(rightSpaces, ' ');
 
-    const char* str = convertStringToChar(s);
-    const char* color_str = convertStringToChar(color);
-    const char* bg_str = convertStringToChar(bg);
+    string line = bg + " " + BOLD_TEXT + color + s + RESET_FORMAT + bg + " ";
+    return line;
 
-    printf("%s %s%s%s%s%s ", bg_str, BOLD_TEXT, color_str, str, RESET_FORMAT, bg_str);
 }
 
-void emptyLine(int n, int length, string bg) {
-    string s = string(length*n+2*n, ' ');
+string emptyLine(int n, int length, string bg)
+{
+    string s = string(length * n + 2 * n, ' ');
 
-    const char* str = convertStringToChar(s);
-    const char* bg_str = convertStringToChar(bg);
+    string line = bg + s + RESET_FORMAT + "\n";
+    return line;
 
-    printf("%s%s%s\n", bg_str, str, RESET_FORMAT);
 }
 
-void emptyCell(int n, int length, string bg, int type = 0) {
+string emptyCell(int n, int length, string bg, int type = 0)
+{
     string color = type == 0 ? convertNumberToColor(n) : CELL_BACKGROUND_COLOR;
     string s = string(length, ' ');
 
-    const char* str = convertStringToChar(s);
-    const char* color_str = convertStringToChar(color);
-    const char* bg_str = convertStringToChar(bg);
-
-    printf("%s %s%s%s ", bg_str, color_str, str, bg_str);
+    string line = bg + " " + color + s + bg + " ";
+    return line;
 
 }
 
-void printBoard(Gameplay &gameplay) {
+void printBoard(Gameplay &gameplay)
+{
 
-    int** &board = gameplay.board;
+    int **&board = gameplay.board;
     int n = gameplay.size;
     int cell_width = convertCellWidth(n);
     int cell_height = convertCellHeight(n);
+    int lineLength = cell_width * n + 2 * n;
+    string finalBoard = "";
 
-    for (int i=0; i<n; i++) {
-        printf("\t");
-        emptyLine(n, cell_width, BOARD_BACKGROUND_COLOR);
+    for (int i = 0; i < n; i++)
+    {
+        // Top border of the board
+        finalBoard += emptyLine(n, cell_width, BOARD_BACKGROUND_COLOR);
 
-        for (int k=0; k<cell_height/2; k++) {
-            printf("\t");
-            for (int j=0; j<n; j++) {
-                emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
+        // Height above the number
+        for (int k = 0; k < cell_height / 2; k++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                finalBoard += emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
             }
-            printf("%s\n", RESET_FORMAT);
-
+            finalBoard += RESET_FORMAT "\n";
         }
 
-        printf("\t");
-        for (int j=0; j<n; j++) {
-            if (board[i][j] == 0) {
-                emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
-            } else {
-                centerBoardNumber(board[i][j], cell_width, BLACK_TEXT, BOARD_BACKGROUND_COLOR);
+        // Number
+        for (int j = 0; j < n; j++)
+        {
+            if (board[i][j] == 0)
+            {
+                finalBoard += emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
+            }
+            else
+            {
+                finalBoard += centerBoardNumber(board[i][j], cell_width, BLACK_TEXT, BOARD_BACKGROUND_COLOR);
             }
         }
-        printf("%s\n", RESET_FORMAT);
+        finalBoard += RESET_FORMAT "\n";
 
-        for (int k=0; k<(cell_height - cell_height/2 - 1); k++) {
-            printf("\t");
-            for (int j=0; j<n; j++) {
-                emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
+        // Height below the number
+        for (int k = 0; k < (cell_height - cell_height / 2 - 1); k++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                finalBoard += emptyCell(board[i][j], cell_width, BOARD_BACKGROUND_COLOR);
             }
-            printf("%s\n", RESET_FORMAT);
-        } 
-
+            finalBoard += RESET_FORMAT "\n";
+        }
     }
 
-    printf("\t");
-    emptyLine(n, cell_width, BOARD_BACKGROUND_COLOR);
+    // Bottom border of the board
+    finalBoard += emptyLine(n, cell_width, BOARD_BACKGROUND_COLOR);
+
+    // Center the board
+    stringstream ss(finalBoard);
+    string line;
+
+    while (getline(ss, line, '\n'))
+    {
+        cout << setCenterAlignSize(lineLength) << line << endl;
+    }
 }
 
-void printGameplayMenu(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, User &user) {
-    system("cls");
-
+void printGameplayMenu(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, User &user)
+{
     int n = gameplay.size;
     int score = gameplay.score;
     int best = score > getBestScore(user).score ? score : getBestScore(user).score;
     int step = gameplay.step;
-    int undoStep = undoStack.size-1;
+    int undoStep = undoStack.size - 1;
     int redoStep = redoStack.size;
     int cell_length = 12;
+    int lineLength = cell_length * 5 + 2 * 5;
+    string finalMenu = "";
 
-    printf("\t");
-    emptyLine(5, cell_length, MENU_BACKGROUND_COLOR);
+    // Top border of the menu
+    finalMenu += emptyLine(5, cell_length, MENU_BACKGROUND_COLOR);
 
-    printf("\t");
-    for (int i=0; i<5; i++) {
-        emptyCell(n, cell_length, MENU_BACKGROUND_COLOR, 1);
+    // Height above the title
+    for (int i = 0; i < 5; i++)
+    {
+        finalMenu += emptyCell(n, cell_length, MENU_BACKGROUND_COLOR, 1);
     }
-    printf("%s\n", RESET_FORMAT);
+    finalMenu += RESET_FORMAT "\n";
 
-    printf("\t");
-    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, BLACK_TEXT, CELL_BACKGROUND_COLOR, "    Score   ", MENU_BACKGROUND_COLOR);
-    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, BLACK_TEXT, CELL_BACKGROUND_COLOR, "    Best    ", MENU_BACKGROUND_COLOR);
-    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, BLACK_TEXT, CELL_BACKGROUND_COLOR, "    Steps   ", MENU_BACKGROUND_COLOR);
-    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), CELL_BACKGROUND_COLOR, " Undo steps ", MENU_BACKGROUND_COLOR);
-    printf("%s %s%s%s%s%s ", MENU_BACKGROUND_COLOR, BOLD_TEXT, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), CELL_BACKGROUND_COLOR, " Redo steps ", MENU_BACKGROUND_COLOR);
-    printf("%s\n", RESET_FORMAT);
+    // Titles
+    finalMenu += string(MENU_BACKGROUND_COLOR) + " " + BOLD_TEXT + BLACK_TEXT + CELL_BACKGROUND_COLOR + "    Score   " + MENU_BACKGROUND_COLOR + " ";
+    finalMenu += string(MENU_BACKGROUND_COLOR) + " " + BOLD_TEXT + BLACK_TEXT + CELL_BACKGROUND_COLOR + "    Best    " + MENU_BACKGROUND_COLOR + " ";
+    finalMenu += string(MENU_BACKGROUND_COLOR) + " " + BOLD_TEXT + BLACK_TEXT + CELL_BACKGROUND_COLOR + "    Steps   " + MENU_BACKGROUND_COLOR + " ";
+    finalMenu += string(MENU_BACKGROUND_COLOR) + " " + BOLD_TEXT + (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT) + CELL_BACKGROUND_COLOR + " Undo steps " + MENU_BACKGROUND_COLOR + " ";
+    finalMenu += string(MENU_BACKGROUND_COLOR) + " " + BOLD_TEXT + (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT) + CELL_BACKGROUND_COLOR + " Redo steps " + MENU_BACKGROUND_COLOR + " ";
+    finalMenu += RESET_FORMAT "\n";
 
-    printf("\t");
-    centerBoardNumber(score, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
-    centerBoardNumber(best, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
-    centerBoardNumber(step, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
-    centerBoardNumber(undoStep, cell_length, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), MENU_BACKGROUND_COLOR, 1);
-    centerBoardNumber(redoStep, cell_length, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), MENU_BACKGROUND_COLOR, 1);
-    printf("%s\n", RESET_FORMAT);
+    // Value of each title
+    finalMenu += centerBoardNumber(score, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
+    finalMenu += centerBoardNumber(best, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
+    finalMenu += centerBoardNumber(step, cell_length, BLACK_TEXT, MENU_BACKGROUND_COLOR, 1);
+    finalMenu += centerBoardNumber(undoStep, cell_length, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), MENU_BACKGROUND_COLOR, 1);
+    finalMenu += centerBoardNumber(redoStep, cell_length, (gameplay.canUndoRedo ? BLACK_TEXT : RED_TEXT), MENU_BACKGROUND_COLOR, 1);
+    finalMenu += RESET_FORMAT "\n";
 
-    printf("\t");
-    for (int i=0; i<5; i++) {
-        emptyCell(n, cell_length, MENU_BACKGROUND_COLOR, 1);
+    // Height below the title
+    for (int i = 0; i < 5; i++)
+    {
+        finalMenu += emptyCell(n, cell_length, MENU_BACKGROUND_COLOR, 1);
     }
-    printf("%s\n", RESET_FORMAT);
+    finalMenu += RESET_FORMAT "\n";
 
-    printf("\t");
-    emptyLine(5, cell_length, MENU_BACKGROUND_COLOR);
-    printf("\t%s%s - Move up - [ArrowUp]                                                %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
-    printf("\t%s%s - Move down - [ArrowDown]                                            %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
-    printf("\t%s%s - Move left - [ArrowLeft]                                            %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
-    printf("\t%s%s - Move right - [ArrowRight]                                          %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
-    if (gameplay.canUndoRedo) {
-        printf("\t%s%s - Undo - [u]                                                         %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
-        printf("\t%s%s - Redo - [r]                                                         %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
+    finalMenu += emptyLine(5, cell_length, MENU_BACKGROUND_COLOR);
+
+    // Gameplay instructions
+    finalMenu += string(MENU_BACKGROUND_COLOR) + BLACK_TEXT + " - Use arrow to move                                                  " + RESET_FORMAT + "\n";
+
+    if (gameplay.canUndoRedo)
+    {
+        finalMenu += string(MENU_BACKGROUND_COLOR) + BLACK_TEXT + " - Undo - [u]                                                         " + RESET_FORMAT + "\n";
+        finalMenu += string(MENU_BACKGROUND_COLOR) + BLACK_TEXT + " - Redo - [r]                                                         " + RESET_FORMAT + "\n";
     }
-    printf("\t%s%s - Save game - [s]                                                    %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
-    printf("\t%s%s - End game - [x]                                                     %s\n", MENU_BACKGROUND_COLOR, BLACK_TEXT, RESET_FORMAT);
+    finalMenu += string(MENU_BACKGROUND_COLOR) + BLACK_TEXT + " - Save game - [s]                                                    " + RESET_FORMAT + "\n";
+    finalMenu += string(MENU_BACKGROUND_COLOR) + BLACK_TEXT + " - End game - [x]                                                     " + RESET_FORMAT + "\n";
 
-    printf("\t");
-    emptyLine(5, cell_length, MENU_BACKGROUND_COLOR);
-    printf("\n");
+    // Bottom border of the menu
+    finalMenu += emptyLine(5, cell_length, MENU_BACKGROUND_COLOR) + "\n";
 
+    // Center the menu
+    stringstream ss(finalMenu);
+    string line;
+
+    while (getline(ss, line, '\n'))
+    {
+        cout << setCenterAlignSize(lineLength) << line << endl;
+    }
 }
 
-void printFull(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, User &user) {
+void printFull(Gameplay &gameplay, Stack &undoStack, Stack &redoStack, User &user)
+{
+    system("cls");
+    cout << endl << endl;
     printGameplayMenu(gameplay, undoStack, redoStack, user);
     printBoard(gameplay);
 }
 
-int printStartMenu(User &user) {
-    string pre = 
-                "\n\n"
-                "\t __          __  _                          _  \n" 
-                "\t \\ \\        / / | |                        | | \n"
-                "\t  \\ \\  /\\  / /__| | ___ ___  _ __ ___   ___| | \n"
-                "\t   \\ \\/  \\/ / _ \\ |/ __/ _ \\| '_ ` _ \\ / _ \\ | \n"
-                "\t    \\  /\\  /  __/ | (_| (_) | | | | | |  __/_| \n"
-                "\t     \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___(_) \n"
-                "\n"
-                "Welcome back, " BOLD_TEXT YELLOW_TEXT + string(user.username) + RESET_FORMAT "!\n"
-                "Choose one option:\n\n";
+int printStartMenu(User &user)
+{
+    string pre =
+        "\n\n" 
+        TAB_WIDTH_1 " __          __  _                          _  \n" 
+        TAB_WIDTH_1 " \\ \\        / / | |                        | | \n" 
+        TAB_WIDTH_1 "  \\ \\  /\\  / /__| | ___ ___  _ __ ___   ___| | \n" 
+        TAB_WIDTH_1 "   \\ \\/  \\/ / _ \\ |/ __/ _ \\| '_ ` _ \\ / _ \\ | \n" 
+        TAB_WIDTH_1 "    \\  /\\  /  __/ | (_| (_) | | | | | |  __/_| \n" 
+        TAB_WIDTH_1 "     \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___(_) \n" 
+        TAB_WIDTH_1 "\n"
+        "Welcome back, " BOLD_TEXT YELLOW_TEXT +
+        string(user.username) + RESET_FORMAT "!\n"
+        "Choose one option:\n\n";
+
     string post = "";
     string options[] = {
         "Start new game",
@@ -217,7 +278,7 @@ int printStartMenu(User &user) {
         "View your achievement",
         "View global leaderboard",
         "Delete account",
-        "Logout" ,
+        "Logout",
     };
 
     int chosen = generateSelections(options, 6, pre, post);
@@ -225,33 +286,34 @@ int printStartMenu(User &user) {
     return chosen;
 }
 
-int printUserMenu() {
+int printUserMenu()
+{
     string pre =
-                "\n\n" 
-                "\t                                                                   ,---.-,         \n"
-                "\t                                                     ,--,          '   ,'  '.      \n"
-                "\t       ,----,              ,----..                 ,--.'|         /   /      \\    \n"
-                "\t     .'   .' \\            /   /   \\             ,--,  | :        .   ;  ,/.  :   \n"
-                "\t   ,----,'    |          /   .     :         ,---.'|  : '        '   |  | :  ;     \n"
-                "\t   |    :  .  ;         .   /   ;.  \\        ;   : |  | ;        '   |  ./   :    \n"
-                "\t   ;    |.'  /         .   ;   /  ` ;        |   | : _' |        |   :       ,     \n"
-                "\t   `----'/  ;          ;   |  ; \\ ; |        :   : |.'  |         \\   \\     /   \n"
-                "\t     /  ;  /           |   :  | ; | '        |   ' '  ; :          ;   ,   '\\     \n"
-                "\t    ;  /  /-,          .   |  ' ' ' :        \\   \\  .'. |         /   /      \\  \n"
-                "\t   /  /  /.`|          '   ;  \\; /  |         `---`:  | '        .   ;  ,/.  :    \n"
-                "\t ./__;      :           \\   \\  ',  /               '  ; |        '   |  | :  ;   \n"
-                "\t |   :    .'             ;   :    /                |  : ;        '   |  ./   :     \n"
-                "\t ;   | .'                 \\   \\ .'                 '  ,/         |   :      /    \n"
-                "\t `---'                     `---`                   '--'           \\   \\   .'     \n"
-                "\t                                                                   `---`-'         \n"
-                YELLOW_TEXT BOLD_TEXT "\t                                                     - Programmed by LongTo -" RESET_FORMAT 
-                "\n\n"
-                "Welcome, player! Use full-screen to enjoy the game\n";
+        "\n\n" 
+        TAB_WIDTH_2 "                                                                   ,---.-,         \n" 
+        TAB_WIDTH_2 "                                                     ,--,          '   ,'  '.      \n" 
+        TAB_WIDTH_2 "       ,----,              ,----..                 ,--.'|         /   /      \\    \n" 
+        TAB_WIDTH_2 "     .'   .' \\            /   /   \\             ,--,  | :        .   ;  ,/.  :   \n" 
+        TAB_WIDTH_2 "   ,----,'    |          /   .     :         ,---.'|  : '        '   |  | :  ;     \n" 
+        TAB_WIDTH_2 "   |    :  .  ;         .   /   ;.  \\        ;   : |  | ;        '   |  ./   :    \n" 
+        TAB_WIDTH_2 "   ;    |.'  /         .   ;   /  ` ;        |   | : _' |        |   :       ,     \n" 
+        TAB_WIDTH_2 "   `----'/  ;          ;   |  ; \\ ; |        :   : |.'  |         \\   \\     /   \n" 
+        TAB_WIDTH_2 "     /  ;  /           |   :  | ; | '        |   ' '  ; :          ;   ,   '\\     \n" 
+        TAB_WIDTH_2 "    ;  /  /-,          .   |  ' ' ' :        \\   \\  .'. |         /   /      \\  \n" 
+        TAB_WIDTH_2 "   /  /  /.`|          '   ;  \\; /  |         `---`:  | '        .   ;  ,/.  :    \n" 
+        TAB_WIDTH_2 " ./__;      :           \\   \\  ',  /               '  ; |        '   |  | :  ;   \n" 
+        TAB_WIDTH_2 " |   :    .'             ;   :    /                |  : ;        '   |  ./   :     \n" 
+        TAB_WIDTH_2 " ;   | .'                 \\   \\ .'                 '  ,/         |   :      /    \n" 
+        TAB_WIDTH_2 " `---'                     `---`                   '--'           \\   \\   .'     \n" 
+        TAB_WIDTH_2 "                                                                   `---`-'         \n\n" 
+        YELLOW_TEXT BOLD_TEXT TAB_WIDTH_2  "                                                     - Programmed by LongTo -" RESET_FORMAT
+        "\n\n"
+        "Welcome, player! Use full-screen to enjoy the game\n\n";
 
-    string post = 
-                "\n"
-                "Source code: " BOLD_TEXT UNDERLINE_TEXT "https://github.com/longtoZ/2048" RESET_FORMAT;
-
+    string post =
+        "\n"
+        "Source code: " BOLD_TEXT UNDERLINE_TEXT "https://github.com/longtoZ/2048" RESET_FORMAT;
+        
     string options[] = {
         "Login",
         "Register",
@@ -262,49 +324,71 @@ int printUserMenu() {
     int chosen = generateSelections(options, 4, pre, post);
 
     return chosen;
-
 }
 
-void printAchievement(User &user) {
+void printAchievement(User &user)
+{
     system("cls");
     int key = 0;
 
-    getAchievement(user);
-    cout << endl;
-    cout << 
-        "Go back to menu - [x]\n"
-        "Reset achievement - [r]\n"
-    ;
+    string pre1 = getAchievement(user);
+    string post1 = "";
+    string options1[] = {
+        "Go back to menu",
+        "Reset achievement",
+    };
 
-    while (true) {
-        key = getch();
+    int chosen1 = generateSelections(options1, 2, pre1, post1, "center");
+    if (chosen1 == 1)
+    {
+        return;
+    }
+    else if (chosen1 == 2)
+    {
+        string pre2 = TAB_WIDTH_1 RED_TEXT "Are you sure? This action cannot be undone!" RESET_FORMAT;
+        string post2 = "";
+        string options2[] = {
+            "Yes",
+            "No",
+        };
 
-        if (key == X) {
-            break;
-        } else if (key == R) {
-            cout << RED_TEXT << "\nAre you sure? This action cannot be undone!" << RESET_FORMAT << endl;
-            getch();
+        int chosen2 = generateSelections(options2, 2, pre2, post2);
+        if (chosen2 == 1)
+        {
             deleteAchievement(user);
-            break;
+        }
+        else
+        {
+            printAchievement(user);
         }
     }
 }
 
-void printLeaderboard() {
+void printLeaderboard(User &user, bool highlightUser)
+{
     system("cls");
     int key = 0;
+    int rankOfUser = -1;
+    int scoreToHighlight = -1;
 
-    getLeaderboard();
-    cout << endl;
-    cout << 
-        "Go back to menu - [x]\n"
-    ;
+    if (user.username != nullptr) {
+        Data bestScore = getBestScore(user);
 
-    while (true) {
-        key = getch();
-
-        if (key == X) {
-            break;
+        if (highlightUser)
+        {
+            scoreToHighlight = bestScore.score;
         }
+    }
+
+    string pre = getLeaderboard(user, rankOfUser, scoreToHighlight);
+    string post = "";
+    string options[] = {
+        "Go back to menu",
+    };
+
+    int chosen = generateSelections(options, 1, pre, post, "center");
+    if (chosen == 1)
+    {
+        return;
     }
 }

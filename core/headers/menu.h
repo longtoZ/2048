@@ -1,4 +1,5 @@
 #pragma once
+
 #include <conio.h>
 #include <iostream>
 #include "struct.h"
@@ -8,6 +9,7 @@
 #include "processGame.h"
 #include "continueGame.h"
 #include "keys.h"
+#include "effect.h"
 
 int userMenu();
 int startMenu(User &user);

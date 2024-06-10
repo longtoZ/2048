@@ -5,9 +5,9 @@
 #define PASSWORD_SIZE 33
 #define DATE_SIZE 16
 #define INTERVAL_SIZE 6
+#define INT_SIZE 5
 
 // ANSI code for text color
-// #define BLACK_TEXT "\x1b[38;5;233m"
 #define YELLOW_TEXT "\x1b[38;5;11m"
 #define GREEN_TEXT "\x1b[38;5;10m"
 #define RED_TEXT "\x1b[38;5;9m"
@@ -50,11 +50,19 @@
 #define R 114
 #define S 115
 #define U 117
-#define X 120
-#define Y 121
+#define X_key 120
+#define Y_key 121
 #define ONE 49
 #define TWO 50
 #define THREE 51
 #define FOUR 52
 #define FIVE 53
 #define SIX 54
+
+// File path
+#define FILE_PATH "./database/"
+#define USER_FILE_PATH "./database/user.bin"
+
+// Spacing
+#define TAB_WIDTH_2 "\t\t"
+#define TAB_WIDTH_1 "\t"

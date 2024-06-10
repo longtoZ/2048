@@ -1,129 +1,146 @@
 #include "utils.h"
 
-#define FILE_PATH "./database/user/"
+int **createEmptyBoard(int n)
+{
+    int **board = new int *[n];
 
-int** createEmptyBoard(int n) {
-    int** board = new int*[n];
-
-    for (int i=0; i<n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         board[i] = new int[n];
     }
 
     return board;
 }
 
-int** createEmptyPos(int n) {
-    int** emptyPos = new int*[n];
+int **createEmptyPos(int n)
+{
+    int **emptyPos = new int *[n];
 
-    for (int i=0; i<n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         emptyPos[i] = new int[2];
     }
 
     return emptyPos;
-
 }
 
-string getCurrentDateTime() {
+string getCurrentDateTime()
+{
     // Get current time
     auto now = chrono::system_clock::now();
     time_t now_time = chrono::system_clock::to_time_t(now);
-    
+
     // Format time
     stringstream ss;
     ss << put_time(localtime(&now_time), "%d%m%Y_%H%M%S");
     return ss.str();
 }
 
-char* convertStringToChar(const string& str) {
-    char* charArray = new char[str.length() + 1];
+char *convertStringToChar(string str)
+{
+    char *charArray = new char[str.length() + 1];
     strcpy(charArray, str.c_str());
     return charArray;
 }
 
-bool compareByScore(const Data &a, const Data &b) {
-    return (a.score > b.score);
+string convertCharToString(char *charArray)
+{
+    string str(charArray);
+    return str;
 }
 
-string calculate_elapsed_time_string(const high_resolution_clock::time_point& start_time) {
-  // Get the ending time
-  auto end_time = high_resolution_clock::now();
+string calculateElapsedTimeString(const high_resolution_clock::time_point &start_time, const milliseconds &extraTime)
+{
+    auto end_time = high_resolution_clock::now();
 
-  // Calculate elapsed time in seconds
-  duration<double> elapsed_seconds = end_time - start_time;
+    auto duration = end_time - start_time + extraTime;
+    auto elapsed_seconds = duration_cast<seconds>(duration).count();
 
-  // Convert to minutes and remaining seconds
-  int minutes = static_cast<int>(elapsed_seconds.count() / 60);
-  int seconds = static_cast<int>(elapsed_seconds.count() - minutes * 60);
+    int minutes = static_cast<int>(elapsed_seconds / 60);
+    int seconds = static_cast<int>(elapsed_seconds % 60);
 
-  // Create a string stream for formatting
-  std::stringstream ss;
+    stringstream ss;
 
-  // Format the time string with leading zeros for minutes and seconds (00:00)
-  ss << std::setfill('0') << std::setw(2) << minutes << ":"
-     << std::setw(2) << seconds;
+    ss << setfill('0') << setw(2) << minutes << ":"
+       << setw(2) << seconds;
 
-  return ss.str();
+    return ss.str();
 }
 
-void createDirectory(string path) {
-    path = replaceAll(path.substr(2, path.length() - 2), "/", "\\");
-    string command = "md " + path + " >nul 2>&1";
-    int return_code = system(command.c_str());
+long long convertTimeToLong(const high_resolution_clock::time_point &current_time)
+{
+    auto duration = current_time.time_since_epoch();
 
-    if (return_code == 0) {
-        cout << "Directory \"" << path << "\" created successfully." << endl;
-    } else {
-        cerr << "Error creating directory " << path << endl;
-    }
+    auto millis = duration_cast<milliseconds>(duration).count();
+
+    return millis;
 }
 
-string replaceAll(const string& original, const string& toReplace, const string& replacement) {
-    // Create a copy of the original string to work with
+high_resolution_clock::time_point convertLongToTime(long long milliseconds)
+{
+    std::chrono::milliseconds duration(milliseconds);
+
+    std::chrono::high_resolution_clock::time_point time_point(duration);
+
+    return time_point;
+}
+
+long long calculateDurationInMilliseconds(long long start)
+{
+    auto start_time = convertLongToTime(start);
+    auto now = high_resolution_clock::now();
+
+    auto duration = now - start_time;
+
+    auto millis = duration_cast<milliseconds>(duration).count();
+
+    return millis;
+}
+
+string replaceAll(string &original, string &toReplace, string &replacement)
+{
     string result = original;
+    int pos = result.find(toReplace);
 
-    // Find the first occurrence of the substring to replace
-   size_t pos = result.find(toReplace);
-
-    // Loop until no more occurrences are found
-    while (pos != string::npos) {
-        // Replace the found substring with the replacement string
+    while (pos != (int)string::npos)
+    {
         result.replace(pos, toReplace.length(), replacement);
-
-        // Find the next occurrence of the substring to replace
         pos = result.find(toReplace, pos + replacement.length());
     }
 
-    // Return the modified string
     return result;
 }
 
-void createEmptyFile(string path) {
-    path = replaceAll(path.substr(2, path.length() - 2), "/", "\\");
-    string command = "copy NUL " + path + " >nul 2>&1";
-    int return_code = system(command.c_str());
-
-    if (return_code == 0) {
-        cout << "File \"" << path << "\" created successfully." << endl;
-    } else {
-        cerr << "Error creating file " << path << endl;
-        cout << command << endl;
-    }
+void createEmptyFile(string path)
+{
+    ofstream file(path, ios::binary);
+    file.close();
 }
 
-bool fileExist (const string& name) {
+bool fileExist(string name)
+{
     ifstream f(name.c_str());
     return f.good();
 }
 
-void createUserFiles(const string& username) {
+void createUserFiles(string username)
+{
     string fullPath = FILE_PATH + username;
-    createDirectory(fullPath);
-    createEmptyFile(fullPath + "/leaderboard.bin");
-    createEmptyFile(fullPath + "/best.bin");
-    createEmptyFile(fullPath + "/prevboard.bin");
+    createEmptyFile(fullPath + "_achievement.bin");
+    createEmptyFile(fullPath + "_best.bin");
+    createEmptyFile(fullPath + "_prevboard.bin");
 }
 
-void deleteInfo(string username) {
+void deleteUserFiles(string username)
+{
+    string fullPath = FILE_PATH + username;
+    remove((fullPath + "_achievement.bin").c_str());
+    remove((fullPath + "_best.bin").c_str());
+    remove((fullPath + "_prevboard.bin").c_str());
+}
+
+void deleteInfo(string username)
+{
     string oldFile = "./database/user.bin";
     string newFile = "./database/updatedUser.bin";
 
@@ -133,19 +150,25 @@ void deleteInfo(string username) {
     ifile.open(oldFile, ios::binary);
     ofile.open(newFile, ios::binary);
 
-    if (!ifile || !ofile) {
+    if (!ifile || !ofile)
+    {
         cout << "Error: Could not open file for reading or writing." << endl;
         return;
     }
 
-    while (!ifile.eof()) {
-        char* tmpUsername = new char[USERNAME_SIZE];
-        char* tmpPassword = new char[PASSWORD_SIZE];
+    while (true)
+    {
+        char *tmpUsername = new char[USERNAME_SIZE];
+        char *tmpPassword = new char[PASSWORD_SIZE];
 
         ifile.read(tmpUsername, USERNAME_SIZE);
         ifile.read(tmpPassword, PASSWORD_SIZE);
 
-        if (strcmp(tmpUsername, convertStringToChar(username)) != 0) {
+        if (ifile.eof())
+            break;
+
+        if (strcmp(tmpUsername, convertStringToChar(username)) != 0)
+        {
             ofile.write(tmpUsername, USERNAME_SIZE);
             ofile.write(tmpPassword, PASSWORD_SIZE);
         }
@@ -156,69 +179,194 @@ void deleteInfo(string username) {
 
     remove(oldFile.c_str());
     rename(newFile.c_str(), oldFile.c_str());
-} 
-
-void deleteDirectory(const string& path) {
-    string command = "rmdir /s /q " + path + " >nul 2>&1";
-    int return_code = system(command.c_str());
-
-    if (return_code == 0) {
-        // cout << "Directory \"" << path << "\" deleted successfully." << endl;
-    } else {
-        // cerr << "Error deleting directory " << path << endl;
-    }
 }
 
-bool hasSpecialChar(const string& str) {
-    for (char c : str) {
-        if (!isalnum(c)) {
+bool hasSpecialChar(string &str)
+{
+    for (char c : str)
+    {
+        if (!isalnum(c))
+        {
             return true;
         }
     }
     return false;
 }
 
-char* formatDateChar(char* date) {
+string formatDateStr(char *date)
+{
     string str = date;
     string formattedDate = str.substr(0, 2) + "-" + str.substr(2, 2) + "-" + str.substr(4, 4) + " " + str.substr(9, 2) + ":" + str.substr(11, 2) + ":" + str.substr(13, 2);
-    return convertStringToChar(formattedDate);
+    return formattedDate;
 }
 
-int generateSelections(string options[], int n, string pre, string post) {
+int generateSelections(string options[], int n, string pre, string post, string align)
+{
     int chosen = 0;
     int maxLength = 0;
 
-    for (int i=0; i<n; i++) {
-        if (options[i].length() > maxLength) {
+    for (int i = 0; i < n; i++)
+    {
+        if (options[i].length() > maxLength)
+        {
             maxLength = options[i].length();
         }
     }
 
-    while (true) {
+    while (true)
+    {
+        preventPlaying();
         system("cls");
 
-        cout << pre << endl;
+        stringstream ssPre(pre);
+        string preLine;
 
-        for (int i=0; i<n; i++) {
-            if (i == chosen) {
-                cout << BOLD_TEXT << WHITE_BACKGROUND_COLOR << BLACK_TEXT << "\t> " << options[i] << setw(maxLength - options[i].length() + 2) << " <" << RESET_FORMAT << endl << endl;
-            } else {
-                cout << "\t  " << options[i] << endl << endl;
+        while (getline(ssPre, preLine, '\n'))
+        {
+            int lineLength = replaceAllRegex(preLine).length();
+
+            if (align == "left")
+                cout << setLeftAlignSize() << preLine << endl;
+            else if (align == "center")
+                cout << setCenterAlignSize(lineLength) << preLine << endl;
+        }
+        cout << endl;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (i == chosen)
+            {
+                cout << setLeftAlignSize() << BOLD_TEXT WHITE_BACKGROUND_COLOR BLACK_TEXT TAB_WIDTH_2 "> " << options[i] << setw(maxLength - options[i].length() + 2) << " <" << RESET_FORMAT << endl
+                     << endl;
+            }
+            else
+            {
+                cout << setLeftAlignSize() << TAB_WIDTH_2 "  " << options[i] << setw(maxLength - options[i].length() + 2) << "  " << endl
+                     << endl;
             }
         }
 
-        cout << post << endl;
+        stringstream ssPost(post);
+        string postLine;
+
+        cout << endl;
+        while (getline(ssPost, postLine, '\n'))
+        {
+            int lineLength = replaceAllRegex(postLine).length();
+
+            if (align == "left")
+                cout << setLeftAlignSize() << postLine << endl;
+            else if (align == "center")
+                cout << setCenterAlignSize(lineLength) << postLine << endl;
+        }
 
         int key = getch();
 
-        if (key == ENTER) {
+        if (key == ENTER)
+        {
             break;
-        } else if (key == KEYDOWN) {
-            chosen = chosen < n-1 ? chosen+1 : 0; 
-        } else if (key == KEYUP) {
-            chosen = chosen > 0 ? chosen-1 : n-1;
+        }
+        else if (key == KEYDOWN)
+        {
+            chosen = chosen < n - 1 ? chosen + 1 : 0;
+        }
+        else if (key == KEYUP)
+        {
+            chosen = chosen > 0 ? chosen - 1 : n - 1;
         }
     }
 
-    return chosen+1;
+    return chosen + 1;
+}
+
+void gotoxy(int x, int y)
+{
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
+string setLeftAlignSize()
+{
+    ScreenSize screenSize = getScreenSize();
+    int consoleWidth = screenSize.width;
+
+    int leftAlignSize = 0;
+
+    if (consoleWidth < 150) {
+        leftAlignSize = 4;
+    } else if (consoleWidth < 200) {
+        leftAlignSize = consoleWidth / 4;
+    } else {
+        leftAlignSize = consoleWidth / 3.6;
+    }
+
+    return string(leftAlignSize, ' ');
+}
+
+string setCenterAlignSize(int length) 
+{
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &consoleInfo);
+    int consoleWidth = consoleInfo.srWindow.Right - consoleInfo.srWindow.Left + 1;
+
+    if (length >= consoleWidth) {
+        return "";
+    } else {
+        return string((consoleWidth - length) / 2, ' ');
+    }
+}
+
+bool isStrongPassword(string password) {
+    if (password.length() < 8 || password.length() > 32){
+        return false;
+    }
+
+    bool hasUpper = false;
+    bool hasLower = false;
+    bool hasDigit = false;
+    bool hasSpecial = false;
+
+    for (char c : password) {
+        if (isupper(c)) {
+            hasUpper = true;
+        } else if (islower(c)) {
+            hasLower = true;
+        } else if (isdigit(c)) {
+            hasDigit = true;
+        } else if (ispunct(c)) {
+            hasSpecial = true;
+        }
+    }
+
+    return hasUpper && hasLower && hasDigit && hasSpecial;
+}
+
+ScreenSize getScreenSize() {
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &consoleInfo);
+    int consoleWidth = consoleInfo.srWindow.Right - consoleInfo.srWindow.Left + 1;
+    int consoleHeight = consoleInfo.srWindow.Bottom - consoleInfo.srWindow.Top + 1;
+
+    ScreenSize screenSize;
+    screenSize.width = consoleWidth;
+    screenSize.height = consoleHeight;
+
+    return screenSize;
+}
+
+string replaceAllRegex(string input) {
+    regex ansiEscapeSequence("(\\x1b\\[.+?m|\\033\\[.+?m)");
+
+    string result = regex_replace(input, ansiEscapeSequence, "");
+
+    return result;
+}
+
+void sleepIgnoreInput(int miliseconds) {
+    Sleep(miliseconds);
+    while (_kbhit()) {
+        _getch();
+    }
 }

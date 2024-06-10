@@ -9,6 +9,8 @@ struct Gameplay {
     int score;
     int step;
     bool canUndoRedo = true;
+    long long startTime;
+    long long duration = 0;
 };
 
 struct Position {
@@ -35,4 +37,9 @@ struct Data {
 struct User {
     char* username;
     char* password;
+};
+
+struct ScreenSize {
+    int width;
+    int height;
 };

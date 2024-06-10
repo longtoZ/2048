@@ -1,16 +1,21 @@
 #include "stack.h"
 
-StackNode::StackNode(Gameplay gameplay) {
+StackNode::StackNode(Gameplay gameplay)
+{
+    // Create a stack with the current gameplay data
     (this->gameplay).board = createEmptyBoard(gameplay.size);
     (this->gameplay).emptyPos = createEmptyPos(gameplay.emptyLeft);
 
-    for (int i=0; i<gameplay.size; i++) {
-        for (int j=0; j<gameplay.size; j++) {
+    for (int i = 0; i < gameplay.size; i++)
+    {
+        for (int j = 0; j < gameplay.size; j++)
+        {
             (this->gameplay).board[i][j] = gameplay.board[i][j];
         }
     }
 
-    for (int i=0; i<gameplay.emptyLeft; i++) {
+    for (int i = 0; i < gameplay.emptyLeft; i++)
+    {
         (this->gameplay).emptyPos[i][0] = gameplay.emptyPos[i][0];
         (this->gameplay).emptyPos[i][1] = gameplay.emptyPos[i][1];
     }
@@ -23,17 +28,22 @@ StackNode::StackNode(Gameplay gameplay) {
     this->next = nullptr;
 }
 
-void Stack::init() {
+void Stack::init()
+{
     head = nullptr;
     size = 0;
 }
 
-void Stack::push(Gameplay gameplay) {
-    StackNode* node = new StackNode(gameplay);
+void Stack::push(Gameplay gameplay)
+{
+    StackNode *node = new StackNode(gameplay);
 
-    if (head == nullptr) {
+    if (head == nullptr)
+    {
         head = node;
-    } else {
+    }
+    else
+    {
         node->next = head;
         head = node;
     }
@@ -41,20 +51,23 @@ void Stack::push(Gameplay gameplay) {
     size++;
 }
 
-void Stack::pop() {
+void Stack::pop()
+{
 
-    StackNode* tmp = head;
-
+    StackNode *tmp = head;
     head = head->next;
     delete tmp;
-    
+    tmp = nullptr;
+
     size--;
 }
 
-Gameplay Stack::top() {
+Gameplay Stack::top()
+{
     return head->gameplay;
 }
 
-bool Stack::empty() {
-    return head==nullptr;
+bool Stack::empty()
+{
+    return head == nullptr;
 }

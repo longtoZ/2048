@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -8,12 +9,12 @@
 #include "cleanup.h"
 #include "keys.h"
 
-bool compareByScore(const Data &a, const Data &b);
-std::string getCurrentDateTime();
-std::string leftCellNumber(int n, int length);
+string leftCellNumber(int n, int length);
+string getAchievement(User &user);
+string getLeaderboard(User &user, int& rankOfUser, int scoreToHighlight = -1);
+
 void storeBestScore(User &user);
-Data getBestScore(User &user);
-void storeAchievement(int size, int score, int step, std::string elapsed_time, User &user);
+void storeAchievement(int size, int score, int step, string elapsed_time, User &user);
 void deleteAchievement(User &user);
-void getAchievement(User &user);
-void getLeaderboard();
+
+Data getBestScore(User &user);
