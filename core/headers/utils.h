@@ -1,5 +1,4 @@
 #pragma once
-
 #include <conio.h>
 #include <fstream>
 #include <iostream>
@@ -55,4 +54,5 @@ string replaceAll(string& original, string& toReplace, string& replacement);
 string setLeftAlignSize();
 string setCenterAlignSize(int length);
 // Source: https://www.w3schools.com/python/python_regex.asp
+//         https://www.geeksforgeeks.org/regex_replace-in-cpp-replace-the-match-of-a-string-using-regex_replace/
 string replaceAllRegex(string input);

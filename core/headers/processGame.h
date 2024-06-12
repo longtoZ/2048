@@ -1,5 +1,4 @@
 #pragma once
-
 #include "struct.h"
 #include "stack.h"
 #include "cleanup.h"

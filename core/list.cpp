@@ -102,34 +102,48 @@ void List::swap(ListNode *&head, ListNode *node1, ListNode *node2)
     node1->next = temp;
 }
 
-ListNode* getTail(ListNode* head) {
-    ListNode* curr = head;
-    while (curr != nullptr && curr->next != nullptr) {
+ListNode *getTail(ListNode *head)
+{
+    ListNode *curr = head;
+    while (curr != nullptr && curr->next != nullptr)
+    {
         curr = curr->next;
     }
     return curr;
 }
 
-void quickSort(ListNode* &head, ListNode* &tail) {
-    if (head == tail || head == nullptr || tail == nullptr) {
+void quickSort(ListNode *&head, ListNode *&tail)
+{
+    if (head == tail || head == nullptr || tail == nullptr)
+    {
         return;
     }
 
     ListNode *SH = nullptr, *ST = nullptr, *LH = nullptr, *LT = nullptr;
     ListNode *curr = head, *pivot = tail;
 
-    while (curr != pivot) {
-        if ((curr->data).score > (pivot->data).score) {
-            if (ST == nullptr) {
+    while (curr != pivot)
+    {
+        if ((curr->data).score > (pivot->data).score)
+        {
+            if (ST == nullptr)
+            {
                 SH = ST = curr;
-            } else {
+            }
+            else
+            {
                 ST->next = curr;
                 ST = curr;
             }
-        } else {
-            if (LT == nullptr) {
+        }
+        else
+        {
+            if (LT == nullptr)
+            {
                 LH = LT = curr;
-            } else {
+            }
+            else
+            {
                 LT->next = curr;
                 LT = curr;
             }
@@ -140,28 +154,36 @@ void quickSort(ListNode* &head, ListNode* &tail) {
 
     pivot->next = nullptr;
 
-    if (ST != nullptr) {
+    if (ST != nullptr)
+    {
         ST->next = nullptr;
     }
 
-    if (LT != nullptr) {
+    if (LT != nullptr)
+    {
         LT->next = nullptr;
     }
 
     quickSort(SH, ST);
     quickSort(LH, LT);
 
-    if (ST != nullptr) {
+    if (ST != nullptr)
+    {
         ST->next = pivot;
         head = SH;
-    } else {
+    }
+    else
+    {
         head = pivot;
     }
 
-    if (LT != nullptr) {
+    if (LT != nullptr)
+    {
         pivot->next = LH;
         tail = LT;
-    } else {
+    }
+    else
+    {
         tail = pivot;
     }
 }
@@ -171,6 +193,6 @@ void List::sort()
     if (head == nullptr)
         return;
 
-    ListNode* tail = getTail(head);
+    ListNode *tail = getTail(head);
     quickSort(head, tail);
 }

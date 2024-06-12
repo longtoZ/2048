@@ -322,6 +322,7 @@ void startPrevGame(Gameplay &gameplay, User &user)
 
             if (gameOver(gameplay) && !eternal)
             {
+                // Game over popup
                 gameOverPopup(10);
                 printFull(gameplay, undoStack, redoStack, user);
 
@@ -337,7 +338,6 @@ void startPrevGame(Gameplay &gameplay, User &user)
                 {
                     eternal = true;
                     cout << setLeftAlignSize() << GREEN_TEXT << "Use undo to continue playing!" << RESET_FORMAT << endl;
-
                 }
                 else
                 {
@@ -399,12 +399,14 @@ void startPrevGame(Gameplay &gameplay, User &user)
                 }
             }
         }
+        // Exit game
         else if (key == X_key)
         {
             cout << setLeftAlignSize() << "Game ended!" << endl;
             endGame(gameplay, undoStack, redoStack, user);
             break;
         }
+        // Save game
         else if (key == S)
         {
             cout << setLeftAlignSize() << GREEN_TEXT << "Game saved!" << RESET_FORMAT << endl;
@@ -412,6 +414,7 @@ void startPrevGame(Gameplay &gameplay, User &user)
             endGame(gameplay, undoStack, redoStack, user);
             break;
         }
+        // Undo
         else if (key == U)
         {
             if (gameplay.canUndoRedo)
@@ -430,6 +433,7 @@ void startPrevGame(Gameplay &gameplay, User &user)
                      << setLeftAlignSize() << YELLOW_TEXT << "Undo feature is disabled. Please start a new game and enable it!" << RESET_FORMAT << endl;
             }
         }
+        // Redo
         else if (key == R)
         {
             if (gameplay.canUndoRedo)
