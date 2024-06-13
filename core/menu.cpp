@@ -178,8 +178,7 @@ void startGame(Gameplay &gameplay, User &user)
                 }
                 else
                 {
-                    cout << setLeftAlignSize() << "Game ended!" << endl;
-                    endGame(gameplay, undoStack, redoStack, user);
+                    cout << setLeftAlignSize() << "Game ended! Press any key to go back to menu." << endl;
                     break;
                 }
             }
@@ -341,8 +340,7 @@ void startPrevGame(Gameplay &gameplay, User &user)
                 }
                 else
                 {
-                    cout << setLeftAlignSize() << "Game ended!" << endl;
-                    endGame(gameplay, undoStack, redoStack, user);
+                    cout << setLeftAlignSize() << "Game ended! Press any key to go back to menu." << endl;
                     break;
                 }
             }

@@ -4,7 +4,7 @@
 
 # I. Giới thiệu
 
-## 1. Tác giả
+## 1. Tác giả                                                          
 
 - **Họ và tên**: Tô Thành Long.
 - **MSSV**: 23120143.
@@ -73,11 +73,8 @@ Trò chơi này được xây dựng hoàn toàn trên **VS Code**. Để biên 
 
 - `./database`: chứa các file dữ liệu của trò chơi.
 
-- `./img`: chứa hình ảnh minh họa cho **README.md**.
-
 ## 2. Cấu trúc mã nguồn
 
-- `README.md`: file hướng dẫn sử dụng dự án.
 - `main.cpp`: file thực thi chính của trò chơi.
 - `2048.exe`: trò chơi đã được biên dịch.
 - `./core`: chứa các file mã nguồn chính của trò chơi. Bao gồm:
@@ -282,7 +279,41 @@ Trò chơi này được xây dựng hoàn toàn trên **VS Code**. Để biên 
 
     > Bảng xếp hạng sẽ không có người chơi cùng tên.
 
-# III. Phụ lục
+# III. Tự đánh giá
+
+- Bảng đánh giá chức năng được yêu cầu:
+
+| **Chức năng yêu cầu** | **Tiến độ** |
+|-----------------------|-------------|
+| Hiển thị được giao diện kèm chức năng của hai màn hình chính | Đã hoàn thành |
+| Thực hiện được chức năng nhập tên và kiểm tra tính trùng lắp | Đã hoàn thành |
+| Thực hiện được chức năng cài đặt độ lớn của bàn cờ | Đã hoàn thành |
+| Thực hiện được việc lưu trữ thông tin người chơi | Đã hoàn thành |
+| Thực hiện được chức năng Resume | Đã hoàn thành |
+| Thực hiện được chức năng Exit | Đã hoàn thành |
+| Thực hiện được logic trong trò chơi như phát sinh ngẫu nhiên, di chuyển, hiển thị trò chơi, hiển thị điểm, v.v. | Đã hoàn thành |
+| Thực hiện được chức năng undo, undo và redo | Đã hoàn thành |
+| Hiển thị các thông báo và nội dung tương ứng | Đã hoàn thành |
+| Tổ chức thành các file rõ ràng | Đã hoàn thành |
+| Có sử dụng phương thức đồ hoạ kèm giao diện thân thiện | Đã hoàn thành |
+| Cài đặt được cách thức mã hoá tệp tin | Đã hoàn thành |
+| Cài đặt được chức năng Resume cho năm tài khoản | Đã hoàn thành |
+
+- Bảng đánh giá chức năng mở rộng:
+
+| **Chức năng mở rộng** | **Tiến độ** |
+|-----------------------|-------------|
+| Thực hiện chức năng tạo tài khoản với username và password | Đã hoàn thành |
+| Thực hiện chức năng đăng nhập tài khoản | Đã hoàn thành |
+| Thực hiện chức năng xoá tài khoản | Đã hoàn thành |
+| Thực hiện chức năng lưu trò chơi và chơi tiếp cho mọi tài khoản (không giới hạn số lượng tài khoản) | Đã hoàn thành |
+| Thực hiện chức năng lưu thời gian chơi | Đã hoàn thành |
+| Thực hiện chức năng xem thành tích cá nhân | Đã hoàn thành |
+| Thực hiện chức năng xoá thành tích cá nhân | Đã hoàn thành |
+| Cài đặt hiệu ứng chuyển cảnh | Đã hoàn thành |
+
+
+# IV. Phụ lục
 
 ## 1. Cài đặt Debugging dự án trong VS Code
 
@@ -380,7 +411,6 @@ Trò chơi này được xây dựng hoàn toàn trên **VS Code**. Để biên 
 
 > Nguồn tham khảo được ghi kèm theo mỗi hàm trong mã nguồn (nếu có).
 
-- [https://stackoverflow.com/questions/31255486/how-do-i-convert-a-stdchronotime-point-to-long-and-back](https://stackoverflow.com/questions/31255486/how-do-i-convert-a-stdchronotime-point-to-long-and-back)
 - [https://stackoverflow.com/questions/31255486/how-do-i-convert-a-stdchronotime-point-to-long-and-back](https://stackoverflow.com/questions/31255486/how-do-i-convert-a-stdchronotime-point-to-long-and-back)
 - [https://stackoverflow.com/questions/31657511/how-to-get-the-difference-between-two-points-in-time-in-milliseconds](https://stackoverflow.com/questions/31657511/how-to-get-the-difference-between-two-points-in-time-in-milliseconds)
 - [https://www.geeksforgeeks.org/c-program-delete-file/](https://www.geeksforgeeks.org/c-program-delete-file/)
