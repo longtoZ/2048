@@ -184,14 +184,14 @@ void startGame(Gameplay &gameplay, User &user)
             }
         }
         // Exit game
-        else if (key == X_key)
+        else if (key == X_KEY)
         {
             cout << setLeftAlignSize() << "Game ended!" << endl;
             endGame(gameplay, undoStack, redoStack, user);
             break;
         }
         // Save game
-        else if (key == S)
+        else if (key == S_KEY)
         {
             cout << setLeftAlignSize() << GREEN_TEXT << "Game saved!" << RESET_FORMAT << endl;
             saveBoard(gameplay, user);
@@ -199,7 +199,7 @@ void startGame(Gameplay &gameplay, User &user)
             break;
         }
         // Undo
-        else if (key == U)
+        else if (key == U_KEY)
         {
             if (gameplay.canUndoRedo)
             {
@@ -218,7 +218,7 @@ void startGame(Gameplay &gameplay, User &user)
             }
         }
         // Redo
-        else if (key == R)
+        else if (key == R_KEY)
         {
             if (gameplay.canUndoRedo)
             {
@@ -398,14 +398,14 @@ void startPrevGame(Gameplay &gameplay, User &user)
             }
         }
         // Exit game
-        else if (key == X_key)
+        else if (key == X_KEY)
         {
             cout << setLeftAlignSize() << "Game ended!" << endl;
             endGame(gameplay, undoStack, redoStack, user);
             break;
         }
         // Save game
-        else if (key == S)
+        else if (key == S_KEY)
         {
             cout << setLeftAlignSize() << GREEN_TEXT << "Game saved!" << RESET_FORMAT << endl;
             saveBoard(gameplay, user);
@@ -413,7 +413,7 @@ void startPrevGame(Gameplay &gameplay, User &user)
             break;
         }
         // Undo
-        else if (key == U)
+        else if (key == U_KEY)
         {
             if (gameplay.canUndoRedo)
             {
@@ -432,7 +432,7 @@ void startPrevGame(Gameplay &gameplay, User &user)
             }
         }
         // Redo
-        else if (key == R)
+        else if (key == R_KEY)
         {
             if (gameplay.canUndoRedo)
             {

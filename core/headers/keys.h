@@ -47,11 +47,11 @@
 #define KEYRIGHT 77
 #define ENTER 13
 #define N_KEY 110
-#define R 114
-#define S 115
-#define U 117
-#define X_key 120
-#define Y_key 121
+#define R_KEY 114
+#define S_KEY 115
+#define U_KEY 117
+#define X_KEY 120
+#define Y_KEY 121
 #define ONE 49
 #define TWO 50
 #define THREE 51
